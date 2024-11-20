@@ -1,16 +1,24 @@
 ---
 title: "Progetto SAD"
-output: html_document
+author: "Consiglio Luigi & D'Antuono Francesco Paolo"
 date: "2024-11-03"
-author: Consiglio Luigi & D'Antuono Francesco Paolo
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 
-
-
+# Introduzione
+## Descrizione del dataset
+# Caricamnto del dataset
+La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, bisogna andarsi a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
+```{r}
+dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
+```
 
 ```{r}
 
 ```
+
 
 
