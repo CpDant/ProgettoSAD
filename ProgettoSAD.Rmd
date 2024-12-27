@@ -10,15 +10,32 @@ output:
 
 # Introduzione
 ## Descrizione del dataset
-# Caricamnto del dataset
+TODO
+
+## Obiettivi del progetto
+TODO (Dividere per RQ e spiegare quali saranno le feature interessate, poi verranno messe ogni RQ per sezione).
+
+# Caricamento del dataset
 La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, bisogna andarsi a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
 ```{r}
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
 
+# Pulizia del dataset
+In questa fase, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. Vediamo innanzitutto la struttura del dataset.
 ```{r}
-
+str(dataset)
 ```
-
+Come si può notare dai risultati, i tipi dei dati corrispondono alla loro rappresentazione.
+Ora passiamo a verificare la presenza di righe con valori mancanti.
+```{r}
+colSums(is.na(dataset))
+```
+Anche in questo caso i risultati ci mostrano che non ci sono righe con valori mancanti all'interno del dataset.
+Dunque il dataset attuale ha questa forma, dove si possono visualizzare le informazioni principali su minimo, massimo, media, mediana e quantili.
+```{r}
+summary(dataset)
+```
+# Analisi dei dati per RQ1 (DA FARE INSIEME)
 
 
