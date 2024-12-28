@@ -7,13 +7,36 @@ output:
   pdf_document: default
 ---
 
-
 # Introduzione
 ## Descrizione del dataset
-TODO
 
-## Obiettivi del progetto
-TODO (Dividere per RQ e spiegare quali saranno le feature interessate, poi verranno messe ogni RQ per sezione).
+Il **PhiUSIIL Phishing URL Dataset** è un dataset progettato per lo studio e l'analisi dei siti di phishing. Contiene **23.580 URL** descritti attraverso **56 variabili** che esplorano proprietà tecniche, strutturali e di sicurezza. Ogni URL è accompagnato da una classificazione come **legittimo (0)** o **phishing (1)**.
+
+Le variabili coprono una vasta gamma di caratteristiche, tra cui:
+
+- **Proprietà dell'URL**: lunghezza dell'URL, numero di sottodomini, presenza di caratteri speciali, e frequenza con cui un determinato TLD (Top-Level Domain, come `.com`) è associato a URL legittimi o di phishing, indicando la probabilità che un TLD specifico sia più o meno affidabile. 
+- **Caratteristiche testuali**: numero di lettere, numeri e caratteri speciali.
+- **Dettagli sul dominio**: lunghezza e struttura del dominio.
+- **Elementi strutturali della pagina**: righe di codice, lunghezza della riga più grande, numero di immagini, CSS, JavaScript, reindirizzamenti e popup.
+Il dataset è particolarmente utile per l'addestramento di modelli di machine learning per la rilevazione del phishing e per analisi statistiche mirate a comprendere i pattern e i fattori di rischio degli URL di phishing.
+
+## Obiettivi del Progetto
+Questo progetto si propone di rispondere a tre domande di ricerca principali:
+
+1. **Quali caratteristiche degli URL sono maggiormente associate alla probabilità che un sito sia phishing?**
+    - Variabili analizzate:
+        - `URLLength` (lunghezza dell'URL).
+        - `NoOfSubDomain` (numero di sottodomini).
+        - `NoOfOtherSpecialCharsInURL` (numero di caratteri speciali nell'URL).
+
+2. **C'è una correlazione tra la dimensione della pagina HTML (es. linee di codice) e la probabilità che un sito sia phishing?**
+    - Variabili analizzate:
+        - `LineOfCode` (numero di righe di codice della pagina).
+        - `LargestLineLength` (lunghezza della riga più lunga).
+        
+3. **È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?**
+	I modelli linguistici di grandi dimensioni, possono essere utilizzati per generare dati sintetici basati su pattern appresi da dataset reali. Questa domanda mira a esplorare se tali dati sintetici possano:
+    - Arricchire i dataset esistenti, ad esempio simulando URL legittimi o di phishing realistici.
 
 # Caricamento del dataset
 La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, bisogna andarsi a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
@@ -38,4 +61,5 @@ summary(dataset)
 ```
 # Analisi dei dati per RQ1 (DA FARE INSIEME)
 
+#aggiungere il dataset con le feature che abbiamo eliminato
 
