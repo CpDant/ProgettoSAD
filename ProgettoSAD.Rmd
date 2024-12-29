@@ -51,15 +51,22 @@ str(dataset)
 ```
 Come si può notare dai risultati, i tipi dei dati corrispondono alla loro rappresentazione.
 Ora passiamo a verificare la presenza di righe con valori mancanti.
+
 ```{r}
 colSums(is.na(dataset))
 ```
 Anche in questo caso i risultati ci mostrano che non ci sono righe con valori mancanti all'interno del dataset.
-Dunque il dataset attuale ha questa forma, dove si possono visualizzare le informazioni principali su minimo, massimo, media, mediana e quantili.
+
+## Rimozione feature ridondanti
+Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle 56 variabili che sono presenti nel dataset originale, ne sono rimaste 30, la cui rimozione verrà effettuata di seguito.
+
 ```{r}
-summary(dataset)
+dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityIndex", "CharContinuationRate", "TLDLegitimateProb", "URLCharProb", "NoOfObfuscatedChar", "ObfuscationRatio", "LetterRatioInURL", "DegitRatioInURL", "SpacialCharRatioInURL", "Title", "DomainTitleMatchScore", "HasFavicon", "Robots", "NoOfURLRedirect", "NoOfSelfRedirect", "HasSubmitButton", "HasPasswordField", "HasCopyrightInfo", "NoOfImage", "NoOfCSS", "NoOfJS", "NoOfSelfRef", "NoOfEmptyRef", "NoOfExternalRef")]
 ```
+
+La scelta delle feature da rimuovere è stata fatta in base anche alle RQ che la nostra analisi dovrà rispondere, dove sono esposte le feature interessate da ogni RQ.
+
 # Analisi dei dati per RQ1 (DA FARE INSIEME)
 
-#aggiungere il dataset con le feature che abbiamo eliminato
+
 

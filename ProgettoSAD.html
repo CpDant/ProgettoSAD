@@ -559,119 +559,23 @@ con valori mancanti.</p>
 ##            NoOfExternalRef                      label 
 ##                          0                          0</code></pre>
 <p>Anche in questo caso i risultati ci mostrano che non ci sono righe
-con valori mancanti all’interno del dataset. Dunque il dataset attuale
-ha questa forma, dove si possono visualizzare le informazioni principali
-su minimo, massimo, media, mediana e quantili.</p>
-<pre class="r"><code>summary(dataset)</code></pre>
-<pre><code>##    FILENAME             URL              URLLength          Domain         
-##  Length:23580       Length:23580       Min.   :  14.00   Length:23580      
-##  Class :character   Class :character   1st Qu.:  24.00   Class :character  
-##  Mode  :character   Mode  :character   Median :  28.00   Mode  :character  
-##                                        Mean   :  35.02                     
-##                                        3rd Qu.:  34.00                     
-##                                        Max.   :1769.00                     
-##   DomainLength      IsDomainIP          TLD            URLSimilarityIndex
-##  Min.   :  4.00   Min.   :0.00000   Length:23580       Min.   :  0.6253  
-##  1st Qu.: 16.00   1st Qu.:0.00000   Class :character   1st Qu.: 55.4564  
-##  Median : 20.00   Median :0.00000   Mode  :character   Median :100.0000  
-##  Mean   : 21.62   Mean   :0.00352                      Mean   : 77.8805  
-##  3rd Qu.: 25.00   3rd Qu.:0.00000                      3rd Qu.:100.0000  
-##  Max.   :104.00   Max.   :1.00000                      Max.   :100.0000  
-##  CharContinuationRate TLDLegitimateProb   URLCharProb         TLDLength     
-##  Min.   :0.03774      Min.   :0.000000   Min.   :0.001174   Min.   : 2.000  
-##  1st Qu.:0.66667      1st Qu.:0.005977   1st Qu.:0.050493   1st Qu.: 2.000  
-##  Median :1.00000      Median :0.079963   Median :0.057803   Median : 3.000  
-##  Mean   :0.84160      Mean   :0.260351   Mean   :0.055592   Mean   : 2.765  
-##  3rd Qu.:1.00000      3rd Qu.:0.522907   3rd Qu.:0.062717   3rd Qu.: 3.000  
-##  Max.   :1.00000      Max.   :0.522907   Max.   :0.088766   Max.   :11.000  
-##  NoOfSubDomain   HasObfuscation     NoOfObfuscatedChar ObfuscationRatio   
-##  Min.   :0.000   Min.   :0.000000   Min.   : 0.00000   Min.   :0.0000000  
-##  1st Qu.:1.000   1st Qu.:0.000000   1st Qu.: 0.00000   1st Qu.:0.0000000  
-##  Median :1.000   Median :0.000000   Median : 0.00000   Median :0.0000000  
-##  Mean   :1.168   Mean   :0.002587   Mean   : 0.01743   Mean   :0.0001433  
-##  3rd Qu.:1.000   3rd Qu.:0.000000   3rd Qu.: 0.00000   3rd Qu.:0.0000000  
-##  Max.   :8.000   Max.   :1.000000   Max.   :24.00000   Max.   :0.2030000  
-##  NoOfLettersInURL  LetterRatioInURL NoOfDegitsInURL   DegitRatioInURL 
-##  Min.   :   0.00   Min.   :0.0000   Min.   :  0.000   Min.   :0.0000  
-##  1st Qu.:  10.00   1st Qu.:0.4350   1st Qu.:  0.000   1st Qu.:0.0000  
-##  Median :  15.00   Median :0.5190   Median :  0.000   Median :0.0000  
-##  Mean   :  19.81   Mean   :0.5184   Mean   :  1.923   Mean   :0.0295  
-##  3rd Qu.:  20.00   3rd Qu.:0.5960   3rd Qu.:  0.000   3rd Qu.:0.0000  
-##  Max.   :1501.00   Max.   :0.8720   Max.   :222.000   Max.   :0.6840  
-##  NoOfEqualsInURL   NoOfQMarkInURL    NoOfAmpersandInURL
-##  Min.   : 0.0000   Min.   :0.00000   Min.   : 0.00000  
-##  1st Qu.: 0.0000   1st Qu.:0.00000   1st Qu.: 0.00000  
-##  Median : 0.0000   Median :0.00000   Median : 0.00000  
-##  Mean   : 0.0659   Mean   :0.03181   Mean   : 0.02875  
-##  3rd Qu.: 0.0000   3rd Qu.:0.00000   3rd Qu.: 0.00000  
-##  Max.   :31.0000   Max.   :3.00000   Max.   :30.00000  
-##  NoOfOtherSpecialCharsInURL SpacialCharRatioInURL    IsHTTPS      
-##  Min.   : 1.000             Min.   :0.01300       Min.   :0.0000  
-##  1st Qu.: 1.000             1st Qu.:0.03800       1st Qu.:1.0000  
-##  Median : 1.000             Median :0.05000       Median :1.0000  
-##  Mean   : 2.393             Mean   :0.06405       Mean   :0.7907  
-##  3rd Qu.: 3.000             3rd Qu.:0.08300       3rd Qu.:1.0000  
-##  Max.   :87.000             Max.   :0.39700       Max.   :1.0000  
-##    LineOfCode     LargestLineLength     HasTitle         Title          
-##  Min.   :     2   Min.   :      23   Min.   :0.0000   Length:23580      
-##  1st Qu.:    20   1st Qu.:     208   1st Qu.:1.0000   Class :character  
-##  Median :   416   Median :    1141   Median :1.0000   Mode  :character  
-##  Mean   :  1123   Mean   :   13736   Mean   :0.8626                     
-##  3rd Qu.:  1261   3rd Qu.:    8125   3rd Qu.:1.0000                     
-##  Max.   :132093   Max.   :13975732   Max.   :1.0000                     
-##  DomainTitleMatchScore URLTitleMatchScore   HasFavicon         Robots      
-##  Min.   :  0.00        Min.   :  0.00     Min.   :0.0000   Min.   :0.0000  
-##  1st Qu.:  0.00        1st Qu.:  0.00     1st Qu.:0.0000   1st Qu.:0.0000  
-##  Median : 10.00        Median : 93.33     Median :0.0000   Median :0.0000  
-##  Mean   : 49.55        Mean   : 51.62     Mean   :0.3605   Mean   :0.2697  
-##  3rd Qu.:100.00        3rd Qu.:100.00     3rd Qu.:1.0000   3rd Qu.:1.0000  
-##  Max.   :100.00        Max.   :100.00     Max.   :1.0000   Max.   :1.0000  
-##   IsResponsive    NoOfURLRedirect  NoOfSelfRedirect  HasDescription  
-##  Min.   :0.0000   Min.   :0.0000   Min.   :0.00000   Min.   :0.0000  
-##  1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:0.0000  
-##  Median :1.0000   Median :0.0000   Median :0.00000   Median :0.0000  
-##  Mean   :0.6292   Mean   :0.1371   Mean   :0.03957   Mean   :0.4388  
-##  3rd Qu.:1.0000   3rd Qu.:0.0000   3rd Qu.:0.00000   3rd Qu.:1.0000  
-##  Max.   :1.0000   Max.   :1.0000   Max.   :1.00000   Max.   :1.0000  
-##    NoOfPopup          NoOfiFrame      HasExternalFormSubmit  HasSocialNet   
-##  Min.   :  0.0000   Min.   :  0.000   Min.   :0.00000       Min.   :0.0000  
-##  1st Qu.:  0.0000   1st Qu.:  0.000   1st Qu.:0.00000       1st Qu.:0.0000  
-##  Median :  0.0000   Median :  0.000   Median :0.00000       Median :0.0000  
-##  Mean   :  0.2047   Mean   :  1.572   Mean   :0.04385       Mean   :0.4551  
-##  3rd Qu.:  0.0000   3rd Qu.:  1.000   3rd Qu.:0.00000       3rd Qu.:1.0000  
-##  Max.   :144.0000   Max.   :170.000   Max.   :1.00000       Max.   :1.0000  
-##  HasSubmitButton HasHiddenFields  HasPasswordField      Bank       
-##  Min.   :0.000   Min.   :0.0000   Min.   :0.0000   Min.   :0.0000  
-##  1st Qu.:0.000   1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:0.0000  
-##  Median :0.000   Median :0.0000   Median :0.0000   Median :0.0000  
-##  Mean   :0.414   Mean   :0.3836   Mean   :0.1037   Mean   :0.1292  
-##  3rd Qu.:1.000   3rd Qu.:1.0000   3rd Qu.:0.0000   3rd Qu.:0.0000  
-##  Max.   :1.000   Max.   :1.0000   Max.   :1.0000   Max.   :1.0000  
-##       Pay             Crypto       HasCopyrightInfo   NoOfImage      
-##  Min.   :0.0000   Min.   :0.0000   Min.   :0.0000   Min.   :   0.00  
-##  1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:   0.00  
-##  Median :0.0000   Median :0.0000   Median :0.0000   Median :   8.00  
-##  Mean   :0.2404   Mean   :0.0232   Mean   :0.4881   Mean   :  25.69  
-##  3rd Qu.:0.0000   3rd Qu.:0.0000   3rd Qu.:1.0000   3rd Qu.:  29.00  
-##  Max.   :1.0000   Max.   :1.0000   Max.   :1.0000   Max.   :3200.00  
-##     NoOfCSS            NoOfJS        NoOfSelfRef       NoOfEmptyRef    
-##  Min.   :  0.000   Min.   :  0.00   Min.   :   0.00   Min.   :  0.000  
-##  1st Qu.:  0.000   1st Qu.:  0.00   1st Qu.:   0.00   1st Qu.:  0.000  
-##  Median :  2.000   Median :  6.00   Median :  12.00   Median :  0.000  
-##  Mean   :  6.216   Mean   : 10.37   Mean   :  65.09   Mean   :  2.313  
-##  3rd Qu.:  7.000   3rd Qu.: 15.00   3rd Qu.:  86.00   3rd Qu.:  1.000  
-##  Max.   :517.000   Max.   :386.00   Max.   :7174.00   Max.   :592.000  
-##  NoOfExternalRef       label       
-##  Min.   :   0.00   Min.   :0.0000  
-##  1st Qu.:   1.00   1st Qu.:0.0000  
-##  Median :  10.00   Median :1.0000  
-##  Mean   :  49.35   Mean   :0.5694  
-##  3rd Qu.:  57.00   3rd Qu.:1.0000  
-##  Max.   :6665.00   Max.   :1.0000</code></pre>
+con valori mancanti all’interno del dataset.</p>
+<div id="rimozione-feature-ridondanti" class="section level2">
+<h2>Rimozione feature ridondanti</h2>
+<p>Abbiamo analizzato nel dettaglio le feature del dataset e si è notato
+che ci sono alcune feature del dataset che sono ridondanti e che in
+qualche modo hanno una certa relazione, rappresentando informazioni
+simili. Dunque, delle 56 variabili che sono presenti nel dataset
+originale, ne sono rimaste 30, la cui rimozione verrà effettuata di
+seguito.</p>
+<pre class="r"><code>dataset &lt;- dataset[, !names(dataset) %in% c(&quot;FILENAME&quot;, &quot;URL&quot;, &quot;URLSimilarityIndex&quot;, &quot;CharContinuationRate&quot;, &quot;TLDLegitimateProb&quot;, &quot;URLCharProb&quot;, &quot;NoOfObfuscatedChar&quot;, &quot;ObfuscationRatio&quot;, &quot;LetterRatioInURL&quot;, &quot;DegitRatioInURL&quot;, &quot;SpacialCharRatioInURL&quot;, &quot;Title&quot;, &quot;DomainTitleMatchScore&quot;, &quot;HasFavicon&quot;, &quot;Robots&quot;, &quot;NoOfURLRedirect&quot;, &quot;NoOfSelfRedirect&quot;, &quot;HasSubmitButton&quot;, &quot;HasPasswordField&quot;, &quot;HasCopyrightInfo&quot;, &quot;NoOfImage&quot;, &quot;NoOfCSS&quot;, &quot;NoOfJS&quot;, &quot;NoOfSelfRef&quot;, &quot;NoOfEmptyRef&quot;, &quot;NoOfExternalRef&quot;)]</code></pre>
+<p>La scelta delle feature da rimuovere è stata fatta in base anche alle
+RQ che la nostra analisi dovrà rispondere, dove sono esposte le feature
+interessate da ogni RQ.</p>
+</div>
 </div>
 <div id="analisi-dei-dati-per-rq1-da-fare-insieme" class="section level1">
 <h1>Analisi dei dati per RQ1 (DA FARE INSIEME)</h1>
-<p>#aggiungere il dataset con le feature che abbiamo eliminato</p>
 </div>
 
 
