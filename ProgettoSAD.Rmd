@@ -66,7 +66,19 @@ dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityInd
 
 La scelta delle feature da rimuovere è stata fatta in base anche alle RQ che la nostra analisi dovrà rispondere, dove sono esposte le feature interessate da ogni RQ.
 
-# Analisi dei dati per RQ1 (DA FARE INSIEME)
+# Analisi dei dati per RQ1
+Le feature che metteremo sotto analisi per la RQ1 sono le seguenti:
+
+- `URLLength`: Lunghezza dell'URL;
+- `NoOfSubDomain`: I sottodomini sono URL univoci che risiedono sul dominio acquistato,                      come estensione davanti al dominio normale. Qui viene identficato il                      numero di caratteri del sottodominio;
+- `NoOfOtherSpecialCharsInURL`: Rappresenta il numero di caratteri speciali in un URL.
+Procediamo con un'analisi esplorativa di queste variabili.
+
+## Indici di centralità
+
+## Indici di dispersione
+
+## Quartili e Box plot
 
 
 
