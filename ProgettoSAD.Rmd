@@ -28,19 +28,17 @@ Questo progetto si propone di rispondere a tre domande di ricerca principali:
         - `URLLength` (lunghezza dell'URL).
         - `NoOfSubDomain` (numero di sottodomini).
         - `NoOfOtherSpecialCharsInURL` (numero di caratteri speciali nell'URL).
-
-2. **C'è una correlazione tra la dimensione della pagina HTML (es. linee di codice) e la probabilità che un sito sia phishing?**
-    - Variabili analizzate:
-        - `LineOfCode` (numero di righe di codice della pagina).
-        - `LargestLineLength` (lunghezza della riga più lunga).
         
-3. **È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?**
+2. **È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?**
 	I modelli linguistici di grandi dimensioni, possono essere utilizzati per generare dati sintetici basati su pattern appresi da dataset reali. Questa domanda mira a esplorare se tali dati sintetici possano:
     - Arricchire i dataset esistenti, ad esempio simulando URL legittimi o di phishing realistici.
 
 # Caricamento del dataset
 La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, bisogna andarsi a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
-```{r}
+```{r message = FALSE}
+library(tidyverse)
+library(dplyr)
+library(stats)
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
 
@@ -62,6 +60,7 @@ Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci so
 
 ```{r}
 dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityIndex", "CharContinuationRate", "TLDLegitimateProb", "URLCharProb", "NoOfObfuscatedChar", "ObfuscationRatio", "LetterRatioInURL", "DegitRatioInURL", "SpacialCharRatioInURL", "Title", "DomainTitleMatchScore", "HasFavicon", "Robots", "NoOfURLRedirect", "NoOfSelfRedirect", "HasSubmitButton", "HasPasswordField", "HasCopyrightInfo", "NoOfImage", "NoOfCSS", "NoOfJS", "NoOfSelfRef", "NoOfEmptyRef", "NoOfExternalRef")]
+
 ```
 
 La scelta delle feature da rimuovere è stata fatta in base anche alle RQ che la nostra analisi dovrà rispondere, dove sono esposte le feature interessate da ogni RQ.
@@ -74,11 +73,178 @@ Le feature che metteremo sotto analisi per la RQ1 sono le seguenti:
 - `NoOfOtherSpecialCharsInURL`: Rappresenta il numero di caratteri speciali in un URL.
 Procediamo con un'analisi esplorativa di queste variabili.
 
-## Indici di centralità
+## Frequenze assolute e relative per URLLength
+Dopo aver applicato le funzioni di calcolo in R, ecco i risultati ottenuti.
+
+```{r echo = FALSE}
+#Calcolo frequenze assolute
+frequenze_assolute <- table(dataset$URLLength)
+barplot(
+  frequenze_assolute,
+  main = "Barplot delle Frequenze Assolute",
+  xlab = "URLLength",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+#Calcolo Frequenze relative
+frequenze_percentuali <- prop.table(table(dataset$URLLength)) * 100
+barplot(
+  frequenze_percentuali,
+  main = "Barplot delle Frequenze Relative in Percentuale",
+  xlab = "URLLength",
+  ylab = "Percentuale (%)",
+  col = "orange",
+  border = "black"
+)
+
+
+```
+
+Come si può notare dai due grafici, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli outlier da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
+
+## Indici di centralità per URLLength
+```{r echo = FALSE}
+
+# Calcolo moda
+calculate_moda <- function(x) {
+  uniq_x <- unique(x)
+  uniq_x[which.max(tabulate(match(x, uniq_x)))]
+}
+
+# Calcolo indici di centralità
+stats_df <- data.frame(
+  Minimo = sapply(dataset[c("URLLength")], min),
+  Massimo = sapply(dataset[c("URLLength")], max),
+  Media = sapply(dataset[c("URLLength")], mean),
+  Mediana = sapply(dataset[c("URLLength")], median),
+  Moda = sapply(dataset[c("URLLength")], calculate_moda)
+)
+
+# Stampa risultato in tabella
+
+knitr::kable(stats_df, caption = "Indici di Centralità per URLLength")
+```
+
+Come si può notare dagli indici di centralità avremo che la media risulta essere maggiore della mediana, ciò ci indica che la distribuzione dei dati è asimmetrica con una lunga coda a destra (come notato già dalle frequenze). Un'altra informazione importante che si può derivare da questi dati è che il massimo è molto distante dalla centralità dei dati, dunque potrebbe esserci un'influenza importante degli outlier, per quanto riguarda le analisi future.
 
 ## Indici di dispersione
+Anche in questo caso utilizzeremo le funzioni di R per calcolare gli indici di dispersione per la variabile che stiamo analizzando
+
+```{r echo = FALSE}
+
+# Calcolo indici di dispersione
+dispersion_stats_df <- data.frame(
+  Range = sapply(dataset[c("URLLength")], function(x) max(x) - min(x)),
+  Varianza = sapply(dataset[c("URLLength")], var),
+  DeviazioneStandard = sapply(dataset[c("URLLength")], sd),
+  IQR = sapply(dataset[c("URLLength")], IQR)
+)
+
+# Stampa risultato in tabella
+knitr::kable(dispersion_stats_df, caption = "Indici di Dispersione per URLLength")
+```
+
+Anche questi dati ci mostrano come ci sia una presenza di outlier che influenza molto la distribuzione dei dati che abbiamo a disposizione. Infatti L'IQR e la deviazione standard suggeriscono che la concentrazione dei dati si trova in un range molto piccolo, rispetto al range dei dati che viene esposto. La fase successiva è quella di identificare gli outlier e capire come gestirli.
 
 ## Quartili e Box plot
+Il calcolo dei quartili ci consentirà di capire nel dettaglio la distribuzione dei dati in percentuale.
+
+```{r echo = FALSE}
+
+# Calcolo quartili
+quartile_stats_df <- data.frame(
+  Q0 = sapply(dataset[c("URLLength")], min),
+  Q1_25_Percentile = sapply(dataset[c("URLLength")], function(x) quantile(x, probs = 0.25, na.rm = TRUE)),
+  Q2_50_Percentile = sapply(dataset[c("URLLength")], function(x) quantile(x, probs = 0.50, na.rm = TRUE)),
+  Q3_75_Percentile = sapply(dataset[c("URLLength")], function(x) quantile(x, probs = 0.75, na.rm = TRUE)),
+  Q4 = sapply(dataset[c("URLLength")], max)
+)
+
+# Stampa quartili
+knitr::kable(quartile_stats_df, caption = "Quartili per URLLength")
+
+```
+
+Questi risultati mostrano come il 75% dei dati che sono presenti all'interno del dataset per la variabile *URLLength* arrivano fino al valore 34, ciò significa che, considerato l'IQR calcolato precedentemente, tutto ciò che è al di fuori del range è considerabile outlier.
+
+Di conseguenza, il boxplot risulterà molto schiacciato e difficilmente visibile ed analizzabile. Dunque bisognerà procedere con una rimozione degli outlier, poiché ci sono dati troppo distanti e poco frequenti, che risultano poco significativi. Vediamolo di seguito.
+
+```{r echo = FALSE}
+# Boxplot per URLLength
+boxplot(
+  dataset$URLLength,
+  main = "Boxplot della Variabile URLLength con Quartili",
+  ylab = "Valori",
+  col = "orange",
+  border = "black",
+  notch = TRUE # Mostra la tacca per la mediana
+)
+
+# Aggiungere linee per i quartili
+abline(h = quantile(dataset$URLLength, probs = c(0.25, 0.5, 0.75)), col = "red", lty = 2)
+
+```
+
+## Rimozione outlier tramite metodo dell'IQR
+Abbiamo già calcolato precedente l'IQR, dunque ci basta semplicemente quantificare il limite superiore e inferiore, oltre il quale i nostri dati saranno considerati outlier.
+
+```{r echo = FALSE}
+# Calcolo limiti per identificazione outlier
+q1 <- quantile(dataset$URLLength, 0.25)
+q3 <- quantile(dataset$URLLength, 0.75)
+iqr <- IQR(dataset$URLLength)
+lower_bound <- q1 - 1.5 * iqr
+upper_bound <- q3 + 1.5 * iqr
+cat("Lower Bound: ", lower_bound, "\n")
+cat("Upper Bound: ", upper_bound, "\n")
+
+# Rimozione osservazioni del dataset
+dataset_without_outliers <- dataset %>%
+  filter(URLLength >= lower_bound, URLLength <= upper_bound)
+
+cat("Numero di righe nel dataset filtrato:", nrow(dataset_without_outliers), "\n")
+
+```
+
+Dopo la rimozione degli outlier, il dataset conterrà 21071 osservazioni, circa l'11% in meno rispetto all'originale, ora andremo a rianalizzare la variabile confrontandola con i dati originali, per capire se la rimozione degli outlier ha rimasto invariata la distribuzione dei dati. Ciò ci permetterà di capire se i dati rimossi erano significativi o meno.
+
+## Confronto distribuzioni URLLength pre e post-filtraggio
+Per confrontare le distribuzioni, andremo a rappresentare degli istogrammi pre e post-filtraggio e compararli per capire l'andamento dei dati.
+```{r echo = FALSE}
+barplot(
+  frequenze_assolute,
+  main = "Barplot delle Frequenze Assolute",
+  xlab = "URLLength",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+new_frequenze_assolute <- table(dataset_without_outliers$URLLength)
+barplot(
+  new_frequenze_assolute,
+  main = "Barplot delle Frequenze Assolute",
+  xlab = "URLLength",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
 
 
+```
+
+
+```{r}
+# Percentuale di phishing nel dataset originale
+table(dataset$label) / nrow(dataset)
+
+# Percentuale di phishing nel dataset senza outlier
+table(dataset_without_outliers$label) / nrow(dataset_without_outliers)
+
+outliers <- dataset %>% filter(URLLength > 49)
+table(outliers$label) / nrow(outliers)
+#Esporre dati sulla lunghezza dell'URL confrontando la probabilità di phishing e la distribuzione di questi dati da entrambi i dataset
+
+
+```
 
