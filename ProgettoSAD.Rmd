@@ -3,14 +3,24 @@ title: "Progetto SAD"
 author: "Consiglio Luigi & D'Antuono Francesco Paolo"
 date: "2024-11-03"
 output:
+  pdf_document:
+    latex_engine: xelatex
   html_document: default
-  pdf_document: default
+  header-includes:
+    - \usepackage{fancyhdr}
+    - \pagestyle{fancy}
+    - \fancyhf{}
+    - \rfoot{\thepage} # Mostra il numero di pagina in basso a destra
+    - \lfoot{Nome documento} # Aggiungi informazioni personalizzate a sinistra
+  fontsize: 12pt
+  geometry: a4paper  
 ---
 
 # Introduzione
+
 ## Descrizione del dataset
 
-Il **PhiUSIIL Phishing URL Dataset** è un dataset progettato per lo studio e l'analisi dei siti di phishing. Contiene **23.580 URL** descritti attraverso **56 variabili** che esplorano proprietà tecniche, strutturali e di sicurezza. Ogni URL è accompagnato da una classificazione come **legittimo (0)** o **phishing (1)**.
+Il **PhiUSIIL Phishing URL Dataset** è un dataset progettato per lo studio e l'analisi dei siti di phishing. Contiene **23.580 URL** descritti attraverso **56 variabili** che esplorano proprietà tecniche, strutturali e di sicurezza. Ogni URL è accompagnato da una classificazione come **legittimo (1)** o **phishing (0)**.
 
 Le variabili coprono una vasta gamma di caratteristiche, tra cui:
 
@@ -25,9 +35,12 @@ Questo progetto si propone di rispondere a tre domande di ricerca principali:
 
 1. **Quali caratteristiche degli URL sono maggiormente associate alla probabilità che un sito sia phishing?**
     - Variabili analizzate:
-        - `URLLength` (lunghezza dell'URL).
+        - `URLLength` (lunghezza dell'URL). 
         - `NoOfSubDomain` (numero di sottodomini).
         - `NoOfOtherSpecialCharsInURL` (numero di caratteri speciali nell'URL).
+        
+        Tutte e tre le variabili analizzate sono di tipo discreto ovvero possono assumere solo un insieme finito di valori distinti.
+        
         
 2. **È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?**
 	I modelli linguistici di grandi dimensioni, possono essere utilizzati per generare dati sintetici basati su pattern appresi da dataset reali. Questa domanda mira a esplorare se tali dati sintetici possano:
@@ -39,12 +52,15 @@ La prima fase del progetto richiede il caricamento del dataset all'interno dell'
 library(tidyverse)
 library(dplyr)
 library(stats)
+
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
 
 # Pulizia del dataset
 In questa fase, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. Vediamo innanzitutto la struttura del dataset.
 ```{r}
+tinytex::is_tinytex()
+
 str(dataset)
 ```
 Come si può notare dai risultati, i tipi dei dati corrispondono alla loro rappresentazione.
@@ -73,39 +89,57 @@ Le feature che metteremo sotto analisi per la RQ1 sono le seguenti:
 - `NoOfOtherSpecialCharsInURL`: Rappresenta il numero di caratteri speciali in un URL.
 Procediamo con un'analisi esplorativa di queste variabili.
 
-## Frequenze assolute e relative per URLLength
-Dopo aver applicato le funzioni di calcolo in R, ecco i risultati ottenuti.
+### Frequenze assolute per variabili della RQ1
+
+Dopo aver applicato le funzioni di calcolo in R, ecco i risultati ottenuti. 
 
 ```{r echo = FALSE}
 #Calcolo frequenze assolute
 frequenze_assolute <- table(dataset$URLLength)
 barplot(
   frequenze_assolute,
-  main = "Barplot delle Frequenze Assolute",
+  main = "Barplot delle frequenze assolute",
   xlab = "URLLength",
   ylab = "Frequenze Assolute",
   col = "lightblue",
   border = "black"
 )
-#Calcolo Frequenze relative
-frequenze_percentuali <- prop.table(table(dataset$URLLength)) * 100
+
+par(mfrow=c(1,2))
+
+#Calcolo frequenze assolute
+frequenze_assolute <- table(dataset$NoOfSubDomain)
 barplot(
-  frequenze_percentuali,
-  main = "Barplot delle Frequenze Relative in Percentuale",
-  xlab = "URLLength",
-  ylab = "Percentuale (%)",
-  col = "orange",
+  frequenze_assolute,
+  xlab = "NoOfSubDomain",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
   border = "black"
 )
 
+#Calcolo frequenze assolute
+frequenze_assolute <- table(dataset$NoOfOtherSpecialCharsInURL)
+barplot(
+  frequenze_assolute,
+  xlab = "NoOfOtherSpecialCharsInURL",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
 
+par(mfrow=c(1,1))
 ```
 
-Come si può notare dai due grafici, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli outlier da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
+Come si può notare dal grafico, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli outlier da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
 
-## Indici di centralità per URLLength
+// continuare
+
+## Indici di sintesi
+
+### Indici di centralità
+
 ```{r echo = FALSE}
-
+#Indici per URLLength
 # Calcolo moda
 calculate_moda <- function(x) {
   uniq_x <- unique(x)
@@ -114,55 +148,62 @@ calculate_moda <- function(x) {
 
 # Calcolo indici di centralità
 stats_df <- data.frame(
-  Minimo = sapply(dataset[c("URLLength")], min),
-  Massimo = sapply(dataset[c("URLLength")], max),
-  Media = sapply(dataset[c("URLLength")], mean),
-  Mediana = sapply(dataset[c("URLLength")], median),
-  Moda = sapply(dataset[c("URLLength")], calculate_moda)
+  Minimo = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], min),
+  Massimo = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], max),
+  Media = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], mean),
+  Mediana = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], median),
+  Moda = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], calculate_moda)
 )
 
 # Stampa risultato in tabella
 
-knitr::kable(stats_df, caption = "Indici di Centralità per URLLength")
+knitr::kable(stats_df, caption = "Indici di Centralità")
+
+
+
 ```
 
 Come si può notare dagli indici di centralità avremo che la media risulta essere maggiore della mediana, ciò ci indica che la distribuzione dei dati è asimmetrica con una lunga coda a destra (come notato già dalle frequenze). Un'altra informazione importante che si può derivare da questi dati è che il massimo è molto distante dalla centralità dei dati, dunque potrebbe esserci un'influenza importante degli outlier, per quanto riguarda le analisi future.
 
-## Indici di dispersione
-Anche in questo caso utilizzeremo le funzioni di R per calcolare gli indici di dispersione per la variabile che stiamo analizzando
+//continuare
+
+### Indici di dispersione 
+Anche in questo caso utilizzeremo le funzioni di R per calcolare gli indici di dispersione per le variabili che stiamo analizzando
 
 ```{r echo = FALSE}
 
 # Calcolo indici di dispersione
 dispersion_stats_df <- data.frame(
-  Range = sapply(dataset[c("URLLength")], function(x) max(x) - min(x)),
-  Varianza = sapply(dataset[c("URLLength")], var),
-  DeviazioneStandard = sapply(dataset[c("URLLength")], sd),
-  IQR = sapply(dataset[c("URLLength")], IQR)
+  Range = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], function(x) max(x) - min(x)),
+  Varianza = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], var),
+  DeviazioneStandard = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], sd),
+  IQR = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], IQR)
 )
 
 # Stampa risultato in tabella
-knitr::kable(dispersion_stats_df, caption = "Indici di Dispersione per URLLength")
+knitr::kable(dispersion_stats_df, caption = "Indici di Dispersione")
 ```
 
 Anche questi dati ci mostrano come ci sia una presenza di outlier che influenza molto la distribuzione dei dati che abbiamo a disposizione. Infatti L'IQR e la deviazione standard suggeriscono che la concentrazione dei dati si trova in un range molto piccolo, rispetto al range dei dati che viene esposto. La fase successiva è quella di identificare gli outlier e capire come gestirli.
 
-## Quartili e Box plot
+// continuare
+
+### Quartili e Boxplot
 Il calcolo dei quartili ci consentirà di capire nel dettaglio la distribuzione dei dati in percentuale.
 
 ```{r echo = FALSE}
 
 # Calcolo quartili
 quartile_stats_df <- data.frame(
-  Q0 = sapply(dataset[c("URLLength")], min),
-  Q1_25_Percentile = sapply(dataset[c("URLLength")], function(x) quantile(x, probs = 0.25, na.rm = TRUE)),
-  Q2_50_Percentile = sapply(dataset[c("URLLength")], function(x) quantile(x, probs = 0.50, na.rm = TRUE)),
-  Q3_75_Percentile = sapply(dataset[c("URLLength")], function(x) quantile(x, probs = 0.75, na.rm = TRUE)),
-  Q4 = sapply(dataset[c("URLLength")], max)
+  Q0 = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], min),
+  Q1_25_Percentile = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], function(x) quantile(x, probs = 0.25, na.rm = TRUE)),
+  Q2_50_Percentile = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], function(x) quantile(x, probs = 0.50, na.rm = TRUE)),
+  Q3_75_Percentile = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], function(x) quantile(x, probs = 0.75, na.rm = TRUE)),
+  Q4 = sapply(dataset[c("URLLength","NoOfSubDomain","NoOfOtherSpecialCharsInURL")], max)
 )
 
 # Stampa quartili
-knitr::kable(quartile_stats_df, caption = "Quartili per URLLength")
+knitr::kable(quartile_stats_df, caption = "Quartili")
 
 ```
 
@@ -170,11 +211,14 @@ Questi risultati mostrano come il 75% dei dati che sono presenti all'interno del
 
 Di conseguenza, il boxplot risulterà molto schiacciato e difficilmente visibile ed analizzabile. Dunque bisognerà procedere con una rimozione degli outlier, poiché ci sono dati troppo distanti e poco frequenti, che risultano poco significativi. Vediamolo di seguito.
 
+//continuare
+
 ```{r echo = FALSE}
-# Boxplot per URLLength
+
+par(mfrow=c(1,3))
 boxplot(
   dataset$URLLength,
-  main = "Boxplot della Variabile URLLength con Quartili",
+  main = "Boxplot delle variabili",
   ylab = "Valori",
   col = "orange",
   border = "black",
@@ -184,9 +228,37 @@ boxplot(
 # Aggiungere linee per i quartili
 abline(h = quantile(dataset$URLLength, probs = c(0.25, 0.5, 0.75)), col = "red", lty = 2)
 
+boxplot(
+  dataset$NoOfSubDomain,
+  col = "orange",
+  border = "black",
+  notch = TRUE # Mostra la tacca per la mediana
+)
+
+# Aggiungere linee per i quartili
+abline(h = quantile(dataset$NoOfSubDomain, probs = c(0.25, 0.5, 0.75)), col = "red", lty = 2)
+
+
+boxplot(
+  dataset$NoOfOtherSpecialCharsInURL,
+  col = "orange",
+  border = "black",
+  notch = FALSE # Mostra la tacca per la mediana
+)
+par(mfrow=c(1,1))
+
 ```
 
-## Rimozione outlier tramite metodo dell'IQR
+
+
+
+
+
+
+
+
+
+### Rimozione outlier tramite metodo dell'IQR
 Abbiamo già calcolato precedente l'IQR, dunque ci basta semplicemente quantificare il limite superiore e inferiore, oltre il quale i nostri dati saranno considerati outlier.
 
 ```{r echo = FALSE}
@@ -209,8 +281,9 @@ cat("Numero di righe nel dataset filtrato:", nrow(dataset_without_outliers), "\n
 
 Dopo la rimozione degli outlier, il dataset conterrà 21071 osservazioni, circa l'11% in meno rispetto all'originale, ora andremo a rianalizzare la variabile confrontandola con i dati originali, per capire se la rimozione degli outlier ha rimasto invariata la distribuzione dei dati. Ciò ci permetterà di capire se i dati rimossi erano significativi o meno.
 
-## Confronto distribuzioni URLLength pre e post-filtraggio
+### Confronto distribuzioni URLLength pre e post-filtraggio
 Per confrontare le distribuzioni, andremo a rappresentare degli istogrammi pre e post-filtraggio e compararli per capire l'andamento dei dati.
+
 ```{r echo = FALSE}
 barplot(
   frequenze_assolute,
@@ -247,4 +320,5 @@ table(outliers$label) / nrow(outliers)
 
 
 ```
+
 
