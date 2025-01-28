@@ -18,6 +18,14 @@ output:
 
 # Introduzione
 
+# Descrizione del problema
+Il phishing rappresenta una delle minacce informatiche più diffuse e pericolose, il cui obiettivo è sottrarre informazioni sensibili come credenziali di accesso, numeri di carte di credito e dati personali. Gli attacchi di phishing avvengono principalmente attraverso URL ingannevoli che simulano siti legittimi per indurre gli utenti a fidarsi e condividere i propri dati.
+
+La rilevazione tempestiva degli URL di phishing è essenziale per proteggere gli utenti e ridurre le conseguenze di questi attacchi. Un'analisi statistica delle proprietà degli URL può:
+
+- *Identificare schemi ricorrenti negli URL di phishing*
+- *Evidenziare le caratteristiche più influenti per distinguere un URL legittimo da uno fraudolento*
+
 ## Descrizione del dataset
 
 Il **PhiUSIIL Phishing URL Dataset** è un dataset progettato per lo studio e l'analisi dei siti di phishing. Contiene **23.580 URL** descritti attraverso **56 variabili** che esplorano proprietà tecniche, strutturali e di sicurezza. Ogni URL è accompagnato da una classificazione come **legittimo (1)** o **phishing (0)**.
@@ -59,8 +67,6 @@ dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 # Pulizia del dataset
 In questa fase, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. Vediamo innanzitutto la struttura del dataset.
 ```{r}
-tinytex::is_tinytex()
-
 str(dataset)
 ```
 Come si può notare dai risultati, i tipi dei dati corrispondono alla loro rappresentazione.
@@ -75,7 +81,8 @@ Anche in questo caso i risultati ci mostrano che non ci sono righe con valori ma
 Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle 56 variabili che sono presenti nel dataset originale, ne sono rimaste 30, la cui rimozione verrà effettuata di seguito.
 
 ```{r}
-dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityIndex", "CharContinuationRate", "TLDLegitimateProb", "URLCharProb", "NoOfObfuscatedChar", "ObfuscationRatio", "LetterRatioInURL", "DegitRatioInURL", "SpacialCharRatioInURL", "Title", "DomainTitleMatchScore", "HasFavicon", "Robots", "NoOfURLRedirect", "NoOfSelfRedirect", "HasSubmitButton", "HasPasswordField", "HasCopyrightInfo", "NoOfImage", "NoOfCSS", "NoOfJS", "NoOfSelfRef", "NoOfEmptyRef", "NoOfExternalRef")]
+dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityIndex",
+"CharContinuationRate", "TLDLegitimateProb", "URLCharProb", "NoOfObfuscatedChar", "ObfuscationRatio", "LetterRatioInURL", "DegitRatioInURL", "SpacialCharRatioInURL", "Title", "DomainTitleMatchScore", "HasFavicon", "Robots", "NoOfURLRedirect", "NoOfSelfRedirect", "HasSubmitButton", "HasPasswordField", "HasCopyrightInfo", "NoOfImage", "NoOfCSS", "NoOfJS", "NoOfSelfRef", "NoOfEmptyRef", "NoOfExternalRef")]
 
 ```
 
@@ -95,9 +102,9 @@ Dopo aver applicato le funzioni di calcolo in R, ecco i risultati ottenuti.
 
 ```{r echo = FALSE}
 #Calcolo frequenze assolute
-frequenze_assolute <- table(dataset$URLLength)
+frequenze_assolute_url <- table(dataset$URLLength)
 barplot(
-  frequenze_assolute,
+  frequenze_assolute_url,
   main = "Barplot delle frequenze assolute",
   xlab = "URLLength",
   ylab = "Frequenze Assolute",
@@ -107,20 +114,20 @@ barplot(
 
 par(mfrow=c(1,2))
 
-#Calcolo frequenze assolute
-frequenze_assolute <- table(dataset$NoOfSubDomain)
+
+frequenze_assolute_subdomain <- table(dataset$NoOfSubDomain)
 barplot(
-  frequenze_assolute,
+  frequenze_assolute_subdomain,
   xlab = "NoOfSubDomain",
   ylab = "Frequenze Assolute",
   col = "lightblue",
   border = "black"
 )
 
-#Calcolo frequenze assolute
-frequenze_assolute <- table(dataset$NoOfOtherSpecialCharsInURL)
+
+frequenze_assolute_special_chars <- table(dataset$NoOfOtherSpecialCharsInURL)
 barplot(
-  frequenze_assolute,
+  frequenze_assolute_special_chars,
   xlab = "NoOfOtherSpecialCharsInURL",
   ylab = "Frequenze Assolute",
   col = "lightblue",
@@ -130,9 +137,7 @@ barplot(
 par(mfrow=c(1,1))
 ```
 
-Come si può notare dal grafico, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli outlier da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
-
-// continuare
+Come si può notare dai grafici, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli outlier da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati, per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
 
 ## Indici di sintesi
 
@@ -163,12 +168,14 @@ knitr::kable(stats_df, caption = "Indici di Centralità")
 
 ```
 
-Come si può notare dagli indici di centralità avremo che la media risulta essere maggiore della mediana, ciò ci indica che la distribuzione dei dati è asimmetrica con una lunga coda a destra (come notato già dalle frequenze). Un'altra informazione importante che si può derivare da questi dati è che il massimo è molto distante dalla centralità dei dati, dunque potrebbe esserci un'influenza importante degli outlier, per quanto riguarda le analisi future.
+Analizziamo nel dettaglio gli indici di centralità per ogni variabile:
 
-//continuare
+- **URLLength**: I dati mostrano una distribuzione asimmetrica positiva, dove la maggior parte degli URL ha lunghezze vicino a 28 (mediana), ma ci sono alcuni URL molto lunghi (fino a 1769), che spostano la media verso l'alto rispetto alla mediana.
+- **NoOfSubDomain**: La distribuzione è fortemente concentrata verso il basso. La maggior parte degli URL ha 1 sottodominio (mediana e moda), e solo pochi URL superano questa soglia, con un massimo di 8 sottodomini.
+- **NoOfOtherSpecialCharsInURL**: Simile a quella di **NoOfSubDomain**, questa variabile è fortemente concentrata verso il basso, con la maggior parte degli URL che contengono 1 solo carattere speciale. Ci sono però alcuni URL con un numero molto elevato di caratteri speciali (fino a 87), che spostano la media verso l'alto.
 
 ### Indici di dispersione 
-Anche in questo caso utilizzeremo le funzioni di R per calcolare gli indici di dispersione per le variabili che stiamo analizzando
+Anche in questo caso utilizzeremo le funzioni di R per calcolare gli indici di dispersione per le variabili che stiamo analizzando.
 
 ```{r echo = FALSE}
 
@@ -184,9 +191,11 @@ dispersion_stats_df <- data.frame(
 knitr::kable(dispersion_stats_df, caption = "Indici di Dispersione")
 ```
 
-Anche questi dati ci mostrano come ci sia una presenza di outlier che influenza molto la distribuzione dei dati che abbiamo a disposizione. Infatti L'IQR e la deviazione standard suggeriscono che la concentrazione dei dati si trova in un range molto piccolo, rispetto al range dei dati che viene esposto. La fase successiva è quella di identificare gli outlier e capire come gestirli.
+Analizziamo nel dettaglio gli indici di dispersione per ogni variabile:
 
-// continuare
+- **URLLength**: La varianza  riflette anch'essa la variabilità complessiva dei dati, ma è influenzata dagli outlier. Infatti la deviazione standard è moderata rispetto alla media indicando una variabilità significativa, ma non estrema. Dunque, la lunghezza degli URL è distribuita in modo relativamente coerente intorno alla media, con una maggiore densità vicino alla mediana (28).
+- **NoOfSubDomain**: La varianza e la deviazione standard sono basse, indicando una distribuzione stretta attorno alla media. Dunque è una variabile poco dispersa, concentrata in un intervallo ristretto, con valori superiori a 1 rari.
+- **NoOfOtherSpecialCharsInURL**: La varianza e la deviazione standard riflettono una moderata dispersione intorno alla media. Dunque, la variabile è asimmetrica positiva, con la maggior parte dei dati vicini a 1 e pochi URL con molti caratteri speciali che aumentano la dispersione.
 
 ### Quartili e Boxplot
 Il calcolo dei quartili ci consentirà di capire nel dettaglio la distribuzione dei dati in percentuale.
@@ -206,19 +215,19 @@ quartile_stats_df <- data.frame(
 knitr::kable(quartile_stats_df, caption = "Quartili")
 
 ```
+Analizziamo nel dettaglio gli indici di dispersione per ogni variabile:
 
-Questi risultati mostrano come il 75% dei dati che sono presenti all'interno del dataset per la variabile *URLLength* arrivano fino al valore 34, ciò significa che, considerato l'IQR calcolato precedentemente, tutto ciò che è al di fuori del range è considerabile outlier.
+- **URLLength**: La lunghezza dell'URL ha una distribuzione asimmetrica positiva, con la maggior parte dei dati concentrata tra 24 e 34, ma valori estremamente alti (oltre 1000) che rappresentano eccezioni.
+- **NoOfSubDomain**: La concentrazione dei quartili (Q1 = Q2 = Q3 = 1) evidenzia che il numero di sottodomini è stabile e poco variabile. Infatti, solo pochi URL oltre Q3 contengono più di 1 sottodominio, con un massimo isolato di 8.
+- **NoOfOtherSpecialCharsInURL**: La maggior parte degli URL contiene pochissimi caratteri speciali, con il 75% degli URL che ha al massimo 3 caratteri speciali. La presenza di un massimo di 87 caratteri speciali crea una alta variabilità, come confermato dalla deviazione standard e dal range ampio.
 
-Di conseguenza, il boxplot risulterà molto schiacciato e difficilmente visibile ed analizzabile. Dunque bisognerà procedere con una rimozione degli outlier, poiché ci sono dati troppo distanti e poco frequenti, che risultano poco significativi. Vediamolo di seguito.
-
-//continuare
 
 ```{r echo = FALSE}
 
 par(mfrow=c(1,3))
 boxplot(
   dataset$URLLength,
-  main = "Boxplot delle variabili",
+  xlab = "URLLength",
   ylab = "Valori",
   col = "orange",
   border = "black",
@@ -230,6 +239,7 @@ abline(h = quantile(dataset$URLLength, probs = c(0.25, 0.5, 0.75)), col = "red",
 
 boxplot(
   dataset$NoOfSubDomain,
+  xlab = "NoOfSubDomain",
   col = "orange",
   border = "black",
   notch = TRUE # Mostra la tacca per la mediana
@@ -241,6 +251,7 @@ abline(h = quantile(dataset$NoOfSubDomain, probs = c(0.25, 0.5, 0.75)), col = "r
 
 boxplot(
   dataset$NoOfOtherSpecialCharsInURL,
+  xlab = "NoOfOtherSpecialCharsInURL",
   col = "orange",
   border = "black",
   notch = FALSE # Mostra la tacca per la mediana
@@ -249,76 +260,144 @@ par(mfrow=c(1,1))
 
 ```
 
-
-
-
-
-
-
-
-
+I boxplot sono molto schiacciati e poco visualizzabili, dovuto dalla variabilità elevata dei dati. Ciò ci porta ad analizzare e capire come gestire gli outlier, soprattutto nella variabile **URLLength** e **NoOfOtherSpecialCharsInURL**. Proviamo a rimuovere gli outlier per capire se essi sono significativi per le analisi successive.
 
 ### Rimozione outlier tramite metodo dell'IQR
-Abbiamo già calcolato precedente l'IQR, dunque ci basta semplicemente quantificare il limite superiore e inferiore, oltre il quale i nostri dati saranno considerati outlier.
+Abbiamo già calcolato precedente l'IQR, dunque, ci basta semplicemente quantificare il limite superiore e inferiore, oltre il quale i nostri dati saranno considerati outlier.
 
 ```{r echo = FALSE}
 # Calcolo limiti per identificazione outlier
-q1 <- quantile(dataset$URLLength, 0.25)
-q3 <- quantile(dataset$URLLength, 0.75)
-iqr <- IQR(dataset$URLLength)
-lower_bound <- q1 - 1.5 * iqr
-upper_bound <- q3 + 1.5 * iqr
-cat("Lower Bound: ", lower_bound, "\n")
-cat("Upper Bound: ", upper_bound, "\n")
+
+q1_URL <- quantile(dataset$URLLength, 0.25)
+q3_URL <- quantile(dataset$URLLength, 0.75)
+iqr_URL <- IQR(dataset$URLLength)
+lower_bound_URL <- q1_URL - 1.5 * iqr_URL
+upper_bound_URL <- q3_URL + 1.5 * iqr_URL
+cat("Lower Bound URLLength: ", lower_bound_URL, "\n")
+cat("Upper Bound URLLength: ", upper_bound_URL, "\n")
+
+q1_special_chars <- quantile(dataset$NoOfOtherSpecialCharsInURL, 0.25)
+q3_special_chars <- quantile(dataset$NoOfOtherSpecialCharsInURL, 0.75)
+iqr_special_chars <- IQR(dataset$NoOfOtherSpecialCharsInURL)
+lower_bound_special_chars <- q1_special_chars - 1.5 * iqr_special_chars
+upper_bound_special_chars <- q3_special_chars + 1.5 * iqr_special_chars
+cat("Lower Bound NoOfOtherSpecialCharsInURL: ", lower_bound_special_chars, "\n")
+cat("Upper Bound NoOfOtherSpecialCharsInURL: ", upper_bound_special_chars, "\n")
 
 # Rimozione osservazioni del dataset
-dataset_without_outliers <- dataset %>%
-  filter(URLLength >= lower_bound, URLLength <= upper_bound)
 
-cat("Numero di righe nel dataset filtrato:", nrow(dataset_without_outliers), "\n")
+dataset_no_outliers_url <- dataset %>%
+  filter(URLLength >= 14, URLLength <= upper_bound_URL)
+dataset_no_outliers_special_chars <- dataset %>%
+  filter(NoOfOtherSpecialCharsInURL >= 1, NoOfOtherSpecialCharsInURL <= upper_bound_special_chars)
+
+#Tabella per visualizzare gli indici per i nuovi dataset
+
+summary_stats_df <- data.frame(
+  Statistica = c("Min", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max"),
+  URLLength = as.numeric(summary(dataset_no_outliers_url$URLLength)),
+  NoOfOtherSpecialCharsInURL = as.numeric(summary(dataset_no_outliers_special_chars$NoOfOtherSpecialCharsInURL))
+)
+
+knitr::kable(summary_stats_df, caption = "Summary")
 
 ```
 
-Dopo la rimozione degli outlier, il dataset conterrà 21071 osservazioni, circa l'11% in meno rispetto all'originale, ora andremo a rianalizzare la variabile confrontandola con i dati originali, per capire se la rimozione degli outlier ha rimasto invariata la distribuzione dei dati. Ciò ci permetterà di capire se i dati rimossi erano significativi o meno.
+Dopo la rimozione degli outlier, si può notare che c'è stata una notevole variazione degli indici stiatistici, ciò potrebbe comportare che gli outlier in realtà sono significativi e non devono essere rimossi per le analisi che dovremo condurre. Andiamo a confrontare le distribuzioni per evidenziare ulteriori differenze.
 
-### Confronto distribuzioni URLLength pre e post-filtraggio
-Per confrontare le distribuzioni, andremo a rappresentare degli istogrammi pre e post-filtraggio e compararli per capire l'andamento dei dati.
+### Confronto distribuzioni pre e post-filtraggio
+Per confrontare le distribuzioni, andremo a rappresentare dei barplot pre e post-filtraggio e compararli per capire l'andamento dei dati.
 
 ```{r echo = FALSE}
+par(mfrow=c(1,2))
+
 barplot(
-  frequenze_assolute,
-  main = "Barplot delle Frequenze Assolute",
+  frequenze_assolute_url,
   xlab = "URLLength",
   ylab = "Frequenze Assolute",
   col = "lightblue",
   border = "black"
 )
-new_frequenze_assolute <- table(dataset_without_outliers$URLLength)
+
+new_frequenze_assolute_url <- table(dataset_no_outliers_url$URLLength)
 barplot(
-  new_frequenze_assolute,
-  main = "Barplot delle Frequenze Assolute",
-  xlab = "URLLength",
+  new_frequenze_assolute_url,
+  xlab = "URLLength senza outliers",
   ylab = "Frequenze Assolute",
   col = "lightblue",
+  border = "black"
+)
+
+barplot(
+  frequenze_assolute_special_chars,
+  xlab = "NoOfOtherSpecialCharsInURL",
+  ylab = "Frequenze Assolute",
+  col = "orange",
+  border = "black"
+)
+new_frequenze_assolute_special_chars <- table(dataset_no_outliers_special_chars$NoOfOtherSpecialCharsInURL)
+barplot(
+  new_frequenze_assolute_special_chars,
+  xlab = "NoOfOtherSpecialCharsInURL senza outliers",
+  ylab = "Frequenze Assolute",
+  col = "orange",
   border = "black"
 )
 
 
 ```
 
+Come è possibile vedere dai grafici, le distribuzioni dei dati, anche se sono molto più visibili, non sono confrontabili, poiché sono distribuzioni differenti che spostano la centralità dei dati, cambiandone il significato. Dunque è molto probabile che gli outliers in realtà sono dati significativi che non bisogna rimuovere. Andiamo a calcolare le probabilità che un sito sia di phishing oppure legittimo, pre e post-filtraggio. 
+Ciò ci darà un ottimo indizio sull'importanza degli outliers e quindi su come dovranno essere trattati.
 
-```{r}
+```{r echo = FALSE}
 # Percentuale di phishing nel dataset originale
-table(dataset$label) / nrow(dataset)
+percent_phishing <- table(dataset$label) / nrow(dataset)
 
-# Percentuale di phishing nel dataset senza outlier
-table(dataset_without_outliers$label) / nrow(dataset_without_outliers)
+# Percentuale di phishing nel dataset senza outlier per URLLength
+percent_no_outliers_url <- table(dataset_no_outliers_url$label) / nrow(dataset_no_outliers_url)
 
-outliers <- dataset %>% filter(URLLength > 49)
-table(outliers$label) / nrow(outliers)
-#Esporre dati sulla lunghezza dell'URL confrontando la probabilità di phishing e la distribuzione di questi dati da entrambi i dataset
+# Percentuale di phishing nel dataset senza outlier per NoOfOtherSpecialCharsInURL
+percent_no_outliers_special_chars <- table(dataset_no_outliers_special_chars$label) / nrow(dataset_no_outliers_special_chars)
 
+percent_table <- data.frame(
+  Dataset = c("Originale", "Senza Outlier URLLength", "Senza Outlier NoOfOtherSpecialCharsInURL"),
+  Phishing = c(percent_phishing[1], percent_no_outliers_url[1], percent_no_outliers_special_chars[1]),
+  Legittimo = c(percent_phishing[2], percent_no_outliers_url[2], percent_no_outliers_special_chars[2])
+)
+
+knitr::kable(percent_table, caption = "Percentuali phishing")
 
 ```
 
+Le probabilità mostrano un un decremento della presenza di URL di phishing sia nel caso in cui vi è la rimozione degli outlier di **URLLength** che di **NoOfOtherSpecialCharsInURL**. Ciò dimostra che i dati rimossi hanno un'importante significato nell'individuazione degli URL di phishing o legittimi.
 
+```{r echo = FALSE}
+# Calcolo frequenze relative nel dataset con soli outliers per URLLength
+outliers_url <- dataset %>% filter(URLLength > 49)
+
+frequenze_relative_url_label_outliers <- table(outliers_url$label) / nrow(outliers_url)
+
+# Calcolo frequenze relative nel dataset con soli outliers per NoOfOtherSpecialCharsInURL
+outliers_special_chars <- dataset %>% filter(NoOfOtherSpecialCharsInURL > 6)
+
+frequenze_relative_special_chars_label_outliers <- table(outliers_special_chars$label) / nrow(outliers_special_chars)
+
+par(mfrow=c(1,2))
+barplot(
+  frequenze_relative_url_label_outliers,
+  xlab = "label con URLLength > 49",
+  ylab = "Frequenze Relative",
+  col = "green",
+  border = "black"
+)
+barplot(
+  frequenze_relative_special_chars_label_outliers,
+  xlab = "label con NoOfOtherSpecialCharsInURL > 6",
+  ylab = "Frequenze Relative",
+  col = "green",
+  border = "black"
+)
+```
+
+Andando a flitrare i dataset solo per gli outlier esclusi, notiamo come ci sia una probabilità di phishing del 100%, per i dati al di fuori dell'upper bound, ciò indica che sia URL molto lunghi che URL con molti caratteri speciali, portano a URL di phishing. Ciò ci porta a mantenere gli outlier e ci da un primo indizio su una possibile correlazione tra queste due variabili.
