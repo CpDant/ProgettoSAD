@@ -57,22 +57,24 @@ Questo progetto si propone di rispondere a tre domande di ricerca principali:
 # Caricamento e pulizia del dataset
 
 La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, bisogna andarsi a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
-```{r message = FALSE}
+```{r echo = FALSE}
 library(tidyverse)
 library(dplyr)
 library(stats)
+library(corrplot)
+library(ggplot2)
 
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
 
 In questa fase, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. Vediamo innanzitutto la struttura del dataset.
-```{r}
+```{r echo = FALSE}
 str(dataset)
 ```
 Come si può notare dai risultati, i tipi dei dati corrispondono alla loro rappresentazione.
 Ora passiamo a verificare la presenza di righe con valori mancanti.
 
-```{r}
+```{r echo = FALSE}
 colSums(is.na(dataset))
 ```
 Anche in questo caso i risultati ci mostrano che non ci sono righe con valori mancanti all'interno del dataset.
@@ -529,7 +531,7 @@ knitr::kable(phishing_stats, caption = "Statistiche descrittive per i siti di ph
 
 Dall'analisi dei dati emergono alcune differenze chiave tra i siti legittimi e quelli di phishing rispetto alle variabili esaminate.
 
-1. URLLength:
+1. **URLLength**:
 - Media: I siti di phishing hanno una lunghezza media degli URL significativamente maggiore (46.59) rispetto ai siti legittimi (26.27).
   
 - Mediana: La mediana degli URL phishing (34) è più alta rispetto ai siti legittimi (26), confermando che i siti di phishing tendono ad avere URL più lunghi.
@@ -540,8 +542,7 @@ Dall'analisi dei dati emergono alcune differenze chiave tra i siti legittimi e q
 
 Quindi possiamo notare che la lunghezza dell'URL è un forte indicatore di phishing, con URL significativamente più lunghi e più variabili nei siti fraudolenti.
 
-
-2. NoOfSubDomain:
+2. **NoOfSubDomain**:
 - Media: La differenza è minima tra siti legittimi (1.16) e siti phishing (1.17), suggerendo che questa caratteristica non è particolarmente discriminante.
 
 - Mediana: Identica per entrambe le categorie (1), confermando che la maggior parte degli URL ha un solo sottodominio.
@@ -552,8 +553,7 @@ Quindi possiamo notare che la lunghezza dell'URL è un forte indicatore di phish
 
 Qui notiamo che il numero di sottodomini non sembra un forte predittore di phishing, ma nei siti fraudolenti c'è una maggiore variabilità.
 
-3. NoOfOtherSpecialCharsInURL 
-
+3. **NoOfOtherSpecialCharsInURL**: 
 - Media: I siti di phishing contengono una media molto più alta di caratteri speciali (3.90) rispetto ai siti legittimi (1.25).
 
 - Mediana: Anche la mediana è maggiore nei siti phishing (3 vs 1).
@@ -563,3 +563,57 @@ Qui notiamo che il numero di sottodomini non sembra un forte predittore di phish
 - Estremi: I siti phishing hanno un massimo di 87 caratteri speciali, mentre i siti legittimi arrivano al massimo a 5.
 
 Da ciò si evince che un numero elevato di caratteri speciali nell’URL è un forte indicatore di phishing, poiché gli URL fraudolenti tendono ad avere più simboli rispetto ai siti legittimi.
+
+
+# Statistica descrittiva bivariata
+
+## Matrice di correlazione
+
+La correlazione è una misura statistica che descrive la relazione tra due variabili, vogliamo utilizzarla per vedere se ci sono relazioni tra le variabili in esame.
+
+```{r echo = FALSE}
+# Seleziona due variabili specifiche
+subset_dataset <- dataset[, c("URLLength", "NoOfSubDomain", "NoOfOtherSpecialCharsInURL")]
+
+# Matrice di correlazione
+corrplot(cor(subset_dataset))
+
+```
+
+Dalla matrice di correlazione possiamo notare che c'è una correlazione positiva tra URLLength e NoOfOtherSpecialCharsInURL, ovvero un aumento in una variabile corrisponde a un aumento nell'altra variabile. Questo risultato ci porta a voler analizzare meglio la relazione tra queste due variabili attraverso l'utilizzo di uno Scatterplot.
+
+## Modello di regressione lineare
+
+```{r echo = FALSE}
+
+# Creazione dello scatterplot
+ggplot(dataset, aes(x = URLLength, y = NoOfOtherSpecialCharsInURL)) +
+  geom_point(alpha = 0.5, color = "blue") +  # Punti semitrasparenti per migliorare la visibilità
+  geom_smooth(method = "lm", col = "red", se = TRUE) +  # Linea di regressione con intervallo di confidenza
+  labs(title = "Relazione tra URLLength e NoOfOtherSpecialCharsInURL",
+       x = "URLLength",
+       y = "NoOfOtherSpecialCharsInURL") +
+  theme_minimal()
+
+```
+
+La linea di regressione rossa suggerisce una forte relazione positiva, indicando che all'aumentare della lunghezza dell'URL aumenta anche il numero di caratteri speciali. Questo suggerisce che gli URL più lunghi tendono a contenere più caratteri speciali, una caratteristica comune negli attacchi di phishing, in cui i truffatori usano URL complessi per mascherare l'indirizzo reale.
+
+### Coefficiente di determinazione
+
+Siamo interessati a vedere quanto la retta di regressione si adatta ai dati, per farlo utilizziamo il coefficiente di determinazione.
+
+```{r echo = FALSE}
+# Creazione del modello di regressione lineare
+model <- lm(NoOfOtherSpecialCharsInURL ~ URLLength, data = dataset)
+
+# Calcolo del coefficiente di determinazione (R^2)
+r_squared <- summary(model)$r.squared
+print(paste("Coefficiente di Determinazione (R^2):", round(r_squared, 4)))
+
+```
+$R^2$ = 0.6222 significa che il 62.22% della variabilità nel numero di caratteri speciali può essere spiegata dalla lunghezza dell'URL. Non è un modello perfetto, ma mostra una correlazione moderatamente forte: c'è una tendenza chiara, anche se non tutti i punti seguono perfettamente la retta di regressione.
+
+Si può concludere che la lunghezza dell’URL è un buon indicatore, ma non è l’unico fattore che determina il numero di caratteri speciali negli URL.
+
+
