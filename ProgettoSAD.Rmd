@@ -18,7 +18,7 @@ output:
 
 # Introduzione
 
-# Descrizione del problema
+## Descrizione del problema
 Il phishing rappresenta una delle minacce informatiche più diffuse e pericolose, il cui obiettivo è sottrarre informazioni sensibili come credenziali di accesso, numeri di carte di credito e dati personali. Gli attacchi di phishing avvengono principalmente attraverso URL ingannevoli che simulano siti legittimi per indurre gli utenti a fidarsi e condividere i propri dati.
 
 La rilevazione tempestiva degli URL di phishing è essenziale per proteggere gli utenti e ridurre le conseguenze di questi attacchi. Un'analisi statistica delle proprietà degli URL può:
@@ -54,7 +54,8 @@ Questo progetto si propone di rispondere a tre domande di ricerca principali:
 	I modelli linguistici di grandi dimensioni, possono essere utilizzati per generare dati sintetici basati su pattern appresi da dataset reali. Questa domanda mira a esplorare se tali dati sintetici possano:
     - Arricchire i dataset esistenti, ad esempio simulando URL legittimi o di phishing realistici.
 
-# Caricamento del dataset
+# Caricamento e pulizia del dataset
+
 La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, bisogna andarsi a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
 ```{r message = FALSE}
 library(tidyverse)
@@ -64,7 +65,6 @@ library(stats)
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
 
-# Pulizia del dataset
 In questa fase, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. Vediamo innanzitutto la struttura del dataset.
 ```{r}
 str(dataset)
@@ -80,7 +80,9 @@ Anche in questo caso i risultati ci mostrano che non ci sono righe con valori ma
 ## Rimozione feature ridondanti
 Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle 56 variabili che sono presenti nel dataset originale, ne sono rimaste 30, la cui rimozione verrà effettuata di seguito.
 
-```{r}
+// mettere una tabella con le feature che sono rimaste
+
+```{r echo = FALSE}
 dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityIndex",
 "CharContinuationRate", "TLDLegitimateProb", "URLCharProb", "NoOfObfuscatedChar", "ObfuscationRatio", "LetterRatioInURL", "DegitRatioInURL", "SpacialCharRatioInURL", "Title", "DomainTitleMatchScore", "HasFavicon", "Robots", "NoOfURLRedirect", "NoOfSelfRedirect", "HasSubmitButton", "HasPasswordField", "HasCopyrightInfo", "NoOfImage", "NoOfCSS", "NoOfJS", "NoOfSelfRef", "NoOfEmptyRef", "NoOfExternalRef")]
 
@@ -88,7 +90,9 @@ dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityInd
 
 La scelta delle feature da rimuovere è stata fatta in base anche alle RQ che la nostra analisi dovrà rispondere, dove sono esposte le feature interessate da ogni RQ.
 
-# Analisi dei dati per RQ1
+# Statistica descrittiva univariata
+
+## Analisi dei dati per RQ1
 Le feature che metteremo sotto analisi per la RQ1 sono le seguenti:
 
 - `URLLength`: Lunghezza dell'URL;
@@ -96,7 +100,7 @@ Le feature che metteremo sotto analisi per la RQ1 sono le seguenti:
 - `NoOfOtherSpecialCharsInURL`: Rappresenta il numero di caratteri speciali in un URL.
 Procediamo con un'analisi esplorativa di queste variabili.
 
-### Frequenze assolute per variabili della RQ1
+### Frequenze assolute e barplot
 
 Dopo aver applicato le funzioni di calcolo in R, ecco i risultati ottenuti. 
 
@@ -138,8 +142,6 @@ par(mfrow=c(1,1))
 ```
 
 Come si può notare dai grafici, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli outlier da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati, per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
-
-## Indici di sintesi
 
 ### Indici di centralità
 
@@ -220,7 +222,6 @@ Analizziamo nel dettaglio gli indici di dispersione per ogni variabile:
 - **URLLength**: La lunghezza dell'URL ha una distribuzione asimmetrica positiva, con la maggior parte dei dati concentrata tra 24 e 34, ma valori estremamente alti (oltre 1000) che rappresentano eccezioni.
 - **NoOfSubDomain**: La concentrazione dei quartili (Q1 = Q2 = Q3 = 1) evidenzia che il numero di sottodomini è stabile e poco variabile. Infatti, solo pochi URL oltre Q3 contengono più di 1 sottodominio, con un massimo isolato di 8.
 - **NoOfOtherSpecialCharsInURL**: La maggior parte degli URL contiene pochissimi caratteri speciali, con il 75% degli URL che ha al massimo 3 caratteri speciali. La presenza di un massimo di 87 caratteri speciali crea una alta variabilità, come confermato dalla deviazione standard e dal range ampio.
-
 
 ```{r echo = FALSE}
 
@@ -401,3 +402,164 @@ barplot(
 ```
 
 Andando a flitrare i dataset solo per gli outlier esclusi, notiamo come ci sia una probabilità di phishing del 100%, per i dati al di fuori dell'upper bound, ciò indica che sia URL molto lunghi che URL con molti caratteri speciali, portano a URL di phishing. Ciò ci porta a mantenere gli outlier e ci da un primo indizio su una possibile correlazione tra queste due variabili.
+
+## Analisi statistica comparativa
+
+In questa sezione viene condotta un'analisi esplorativa comparativa in cui viene diviso il dataset in 2 subdataset, uno contenente solo gli url legittimi ed uno solo gli url di phising. Qui vengono comparati gli indici di centralità e dispersione dei due subdataset per comprendere meglio la distribuzione dei dati nei due casi distinti.
+
+### Confronto distribuzioni dataset phishing e dataset legittimo
+Per confrontare le distribuzioni, andremo a rappresentare dei barplot per il dataset di phishing e per il dataset legittimo, in modo da capire l'andamento dei dati.
+
+
+```{r echo = FALSE}
+
+# Divisione del dataset
+legit_sites <- dataset %>% filter(label == 1)
+phishing_sites <- dataset %>% filter(label == 0)
+
+#Calcolo frequenze assolute URLLength
+UrlLegit <- table(legit_sites$URLLength)
+UrlPhishing <- table(phishing_sites$URLLength)
+
+par(mfrow=c(1,2))
+barplot(
+  UrlLegit,
+  main = "Url legittimi",
+  xlab = "URLLength",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+
+barplot(
+  UrlPhishing,
+  main = "Url di phishing",
+  xlab = "URLLength",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+par(mfrow=c(1,1))
+
+
+```
+
+```{r echo = FALSE}
+#Calcolo frequenze assolute NoOfSubDomain
+SubDomainLegit <- table(legit_sites$NoOfSubDomain)
+SubDomainPhishing <- table(phishing_sites$NoOfSubDomain)
+#Calcolo frequenze assolute NoOfOtherSpecialCharsInURL
+OtherSpecialLegit <- table(legit_sites$NoOfOtherSpecialCharsInURL)
+OtherSpecialPhishing <- table(phishing_sites$NoOfOtherSpecialCharsInURL)
+
+par(mfrow=c(2,2))
+barplot(
+  SubDomainLegit,
+  main = "Url legittimi",
+  xlab = "NoOfSubDomain",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+
+barplot(
+  SubDomainPhishing,
+  main = "Url di phishing",
+  xlab = "NoOfSubDomain",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+
+barplot(
+  OtherSpecialLegit,
+  main = "Url legittimi",
+  xlab = "NoOfOtherSpecialCharsInURL",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+
+barplot(
+  OtherSpecialPhishing,
+  main = "Url di phishing",
+  xlab = "NoOfOtherSpecialCharsInURL",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+
+par(mfrow=c(1,1))
+
+
+```
+
+```{r echo = FALSE}
+
+# Funzione per calcolare statistiche di centralità e dispersione
+summary_stats <- function(df, var_name) {
+  return(data.frame(
+    Variabile = var_name,
+    Media = mean(df[[var_name]], na.rm = TRUE),
+    Mediana = median(df[[var_name]], na.rm = TRUE),
+    Deviazione_Standard = sd(df[[var_name]], na.rm = TRUE),
+    Minimo = min(df[[var_name]], na.rm = TRUE),
+    Massimo = max(df[[var_name]], na.rm = TRUE)
+  ))
+}
+
+# Calcolo delle statistiche per ogni variabile della RQ1
+vars <- c("URLLength", "NoOfSubDomain", "NoOfOtherSpecialCharsInURL")
+legit_stats <- do.call(rbind, lapply(vars, function(v) summary_stats(legit_sites, v)))
+phishing_stats <- do.call(rbind, lapply(vars, function(v) summary_stats(phishing_sites, v)))
+
+# Creazione di un unico dataframe per il confronto
+comparison <- cbind(legit_stats, phishing_stats[,-1])
+colnames(comparison) <- c("Variabile", 
+                          "Media_Legit", "Mediana_Legit", "Dev_Std_Legit", "Min_Legit", "Max_Legit",
+                          "Media_Phishing", "Mediana_Phishing", "Dev_Std_Phishing", "Min_Phishing", "Max_Phishing")
+
+# Visualizzazione delle tabelle
+knitr::kable(legit_stats, caption = "Statistiche descrittive per i siti legittimi")
+
+knitr::kable(phishing_stats, caption = "Statistiche descrittive per i siti di phishing")
+
+
+```
+
+Dall'analisi dei dati emergono alcune differenze chiave tra i siti legittimi e quelli di phishing rispetto alle variabili esaminate.
+
+1. URLLength:
+- Media: I siti di phishing hanno una lunghezza media degli URL significativamente maggiore (46.59) rispetto ai siti legittimi (26.27).
+  
+- Mediana: La mediana degli URL phishing (34) è più alta rispetto ai siti legittimi (26), confermando che i siti di phishing tendono ad avere URL più lunghi.
+
+- Dispersione: La deviazione standard è molto più elevata per i siti phishing (48.85) rispetto ai siti legittimi (4.79), indicando una forte variabilità nella lunghezza degli URL dei siti fraudolenti.
+
+- Estremi: Il valore massimo per gli URL phishing (1769 caratteri) è estremamente elevato rispetto ai siti legittimi (49 caratteri), suggerendo che alcuni attacchi di phishing usano URL molto lunghi per ingannare gli utenti.
+
+Quindi possiamo notare che la lunghezza dell'URL è un forte indicatore di phishing, con URL significativamente più lunghi e più variabili nei siti fraudolenti.
+
+
+2. NoOfSubDomain:
+- Media: La differenza è minima tra siti legittimi (1.16) e siti phishing (1.17), suggerendo che questa caratteristica non è particolarmente discriminante.
+
+- Mediana: Identica per entrambe le categorie (1), confermando che la maggior parte degli URL ha un solo sottodominio.
+
+- Dispersione: La deviazione standard è più alta nei siti di phishing (0.83) rispetto ai siti legittimi (0.40), il che indica una maggiore variabilità nei siti fraudolenti.
+
+- Estremi: I siti phishing hanno un minimo di 0 sottodomini e un massimo di 8, mentre i siti legittimi variano da 1 a 4.
+
+Qui notiamo che il numero di sottodomini non sembra un forte predittore di phishing, ma nei siti fraudolenti c'è una maggiore variabilità.
+
+3. NoOfOtherSpecialCharsInURL 
+
+- Media: I siti di phishing contengono una media molto più alta di caratteri speciali (3.90) rispetto ai siti legittimi (1.25).
+
+- Mediana: Anche la mediana è maggiore nei siti phishing (3 vs 1).
+
+- Dispersione: La deviazione standard nei siti di phishing è molto elevata (3.95) rispetto a quelli legittimi (0.51), confermando che alcuni URL fraudolenti possono contenere un numero elevato di caratteri speciali.
+
+- Estremi: I siti phishing hanno un massimo di 87 caratteri speciali, mentre i siti legittimi arrivano al massimo a 5.
+
+Da ciò si evince che un numero elevato di caratteri speciali nell’URL è un forte indicatore di phishing, poiché gli URL fraudolenti tendono ad avere più simboli rispetto ai siti legittimi.
