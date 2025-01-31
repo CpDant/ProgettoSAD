@@ -58,12 +58,14 @@ Questo progetto si propone di rispondere a tre domande di ricerca principali:
 # Caricamento e pulizia del dataset
 
 La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, bisogna andarsi a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
-```{r message = FALSE}
+```{r echo = FALSE, message = FALSE}
 library(tidyverse)
 library(dplyr)
 library(stats)
 library(corrplot)
 library(ggplot2)
+library(cluster)
+library(ClusterR)
 
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
@@ -408,9 +410,13 @@ barplot(
   col = "green",
   border = "black"
 )
+
+n_outliers <- nrow(outliers_url)
+print(n_outliers)
+
 ```
 
-Andando a flitrare i dataset solo per gli outlier esclusi, notiamo come ci sia una probabilità di phishing del 100%, per i dati al di fuori dell'upper bound, ciò indica che sia URL molto lunghi che URL con molti caratteri speciali, portano a URL di phishing. Ciò ci porta a mantenere gli outlier e ci da un primo indizio su una possibile correlazione tra queste due variabili.
+Andando a flitrare i dataset solo per gli outlier esclusi, notiamo come ci sia una probabilità di phishing del 100%, per i dati al di fuori dell'upper bound (i quali sono 2509), ciò indica che sia URL molto lunghi che URL con molti caratteri speciali, portano a URL di phishing. Ciò ci porta a mantenere gli outlier e ci da un primo indizio su una possibile correlazione tra queste due variabili.
 
 ## Analisi statistica comparativa
 
@@ -684,10 +690,124 @@ La tabella mostra i risultati della regressione logistica per la classificazione
 In conclusione:
 
 - **Gli URL più lunghi tendono ad essere più phishing**;
-- **Gli URL con più caratteri speciali sono fortemente associati al phishing**;
-- **Il modello è statisticamente significativo e supporta queste conclusioni**.
+- **Gli URL con più caratteri speciali sono fortemente associati al phishing**.
 
 # Analisi dei cluster
+
+## Metodo dell'Elbow
+
+Abbiamo applicato l'**algoritmo K-Means** alla variabile **URLLength** per individuare gruppi di URL con lunghezze simili. Per scegliere il numero ottimale di cluster, abbiamo usato il **metodo dell'Elbow**, che analizza la riduzione del **Within-Cluster Sum of Squares (WCSS)** al variare di \( K \). Dal grafico ottenuto, possiamo individuare il **punto di flessione** in cui la riduzione del WCSS rallenta, suggerendo il numero ideale di cluster. Se necessario, possiamo confermare la scelta con altre metriche come il **Silhouette Score**.
+
+
+```{r echo = FALSE}
+# Estrarre solo la colonna URLLength
+X <- dataset$URLLength
+
+# Standardizzare i dati
+X_scaled <- scale(X)
+
+# Calcolare il WCSS per diversi valori di K
+wcss <- numeric(10) # Creiamo un vettore per i risultati
+for (k in 1:10) {
+  kmeans_result <- kmeans(X_scaled, centers = k, nstart = 10)
+  wcss[k] <- kmeans_result$tot.withinss
+}
+
+# Creare il grafico del metodo dell'Elbow
+elbow_plot <- ggplot(data.frame(K = 1:10, WCSS = wcss), aes(x = K, y = WCSS)) +
+  geom_point() +
+  geom_line() +
+  
+  labs(title = "Metodo dell'Elbow - URLLength",
+       x = "Numero di Cluster K",
+       y = "Within-cluster Sum of Squares (WCSS)") +
+  theme_minimal()
+
+# Mostrare il grafico
+print(elbow_plot)
+```
+Dal grafico del metodo dell'Elbow, il punto di flessione sembra situarsi intorno a **K = 2 o K = 3**, poiché dopo questi valori la riduzione del **WCSS** diventa meno significativa. Tuttavia, per confermare la scelta ottimale del numero di cluster, vogliamo calcolare il **Silhouette Score**, che ci permetterà di valutare la coesione e la separabilità dei cluster in modo più quantitativo.
+
+## Silhouette dell'Elbow
+
+```{r echo = FALSE}
+# Selezione della variabile URLLength per il clustering
+data_cluster <- dataset$URLLength
+
+# Funzione per calcolare il coefficiente di silhouette medio per diversi k
+silhouette_analysis <- function(k) {
+  km <- kmeans(data_cluster, centers = k, nstart = 25)
+  sil <- silhouette(km$cluster, dist(data_cluster))
+  mean(sil[, 3])  # Restituisce il coefficiente di silhouette medio
+}
+
+# Eseguiamo il calcolo per k da 2 a 10 cluster
+k_values <- 2:10
+silhouette_scores <- sapply(k_values, silhouette_analysis)
+
+# Visualizziamo i risultati
+plot(k_values, silhouette_scores, type = "b", pch = 19,
+     xlab = "Numero di cluster", ylab = "Silhouette media",
+     main = "Metodo della silhouette per la scelta di k")
+
+# Il numero ottimale di cluster è quello con la silhouette media più alta
+optimal_k <- which.max(silhouette_scores)
+cat("Il numero ottimale di cluster è:", k_values[optimal_k], "\n")
+```
+
+Sulla base dei risultati della **silhouette** e del **metodo dell'elbow**, il numero ottimale di cluster è **2**. Poiché entrambi i metodi confermano questa scelta, possiamo procedere con il **k-means con k = 2** per segmentare i dati in due gruppi distinti basati sulla variabile `URLLength`.
+
+## Applicazione del Kmeans
+```{r echo = FALSE}
+km<-kmeans(data_cluster, center=2, iter.max=10, nstart=10)
+#km #visualizza i risultati ottenuti con kmeans
+```
+//aggiungere qualche stampa del kmeans
+
+## Analisi della bontà del clustering
+Abbiamo deciso di calcolare alcune **metriche di bontà** per valutare la qualità del clustering ottenuto con K-Means. In particolare, abbiamo analizzato i **centroidi dei cluster**, la **varianza interna ai cluster (WCSS)**, la **separazione tra i cluster (BCSS)** e l'**indice di Calinski-Harabasz**, che confronta i due valori per misurare l'efficacia della suddivisione. 
+
+```{r echo = FALSE}
+#centroidi del cluster
+centroids <- km$centers
+cat("centroids", centroids, "\n")
+
+#vedere gli altri che significano
+
+#Calcolare WCSS 
+wcss <- sum(km$withinss)
+
+#Calcolare BCSS
+global_centroid <- mean(data_cluster)
+cat("global_centroid", global_centroid, "\n")
+
+bcss <- 0
+
+cluster_points <- km$cluster
+cluster_size <- length(cluster_points)  # Numero di punti nel cluster
+  
+# Calcolo della Between-Cluster Sum of Squares (BCSS)
+bcss <- bcss + cluster_size * (centroids - global_centroid)^2
+
+#Calcolare l'indice di Calinski-Harabasz
+n <- length(data_cluster)
+k <- length(unique(km$cluster))
+ch_index <- (bcss / (k-1)) / (wcss / (n-k))
+
+#Risultati
+cat("WCSS:", wcss, "\n")
+cat("BCSS:", bcss, "\n")
+cat("Calinski-Harabasz:", ch_index, "\n")
+
+```
+ 
+
+Dai risultati emerge che i due cluster individuati sono ben distinti, con centroidi molto distanti tra loro (**282.13 e 32.57**). Il valore elevato della **BCSS (1.4 miliardi)** indica che i cluster sono ben separati, mentre la **WCSS (12.6 milioni)** mostra una certa dispersione interna. L'**indice di Calinski-Harabasz (2.69 milioni)** è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa.  
+
+In conclusione, il clustering risulta efficace, con gruppi ben separati e una buona coesione interna.
+
+
+
 
 # Inferenza Statistica
 
