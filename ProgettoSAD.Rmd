@@ -58,7 +58,7 @@ Questo progetto si propone di rispondere a tre domande di ricerca principali:
 # Caricamento e pulizia del dataset
 
 La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, bisogna andarsi a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
-```{r echo = FALSE, message = FALSE}
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(dplyr)
 library(stats)
@@ -66,34 +66,66 @@ library(corrplot)
 library(ggplot2)
 library(cluster)
 library(ClusterR)
+library(knitr)
 
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
 
-In questa fase, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. Vediamo innanzitutto la struttura del dataset.
-```{r echo = FALSE}
-str(dataset)
-```
-Come si può notare dai risultati, i tipi dei dati corrispondono alla loro rappresentazione.
-Ora passiamo a verificare la presenza di righe con valori mancanti.
+In questa fase, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. 
+Sono stati effettuati due controlli fondamentali:
 
-```{r echo = FALSE}
-colSums(is.na(dataset))
+- **Controllo tipi di dati**: Abbiamo innanzitutto controllato che i tipi di dati corrispondessero con la loro rappresentazione nella colonna specifica. I risultati hanno dato esito positivo e non c'è stato bisogno di modificare il dataset
+- **Controllo valori mancanti**: Anche in questo caso il controllo ha dato esito positivo. Dunque non ci sono righe con valori mancanti all'interno del dataset.
+
+```{r echo = FALSE, results = 'hide'}
+
+#Visualizzazione informazioni principali del dataset
+str(dataset)
+
 ```
-Anche in questo caso i risultati ci mostrano che non ci sono righe con valori mancanti all'interno del dataset.
+
+
+```{r echo = FALSE, results = 'hide'}
+
+#Controllo presenza valori mancanti nel dataset
+colSums(is.na(dataset))
+
+```
+
 
 ## Rimozione feature ridondanti
-Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle 56 variabili che sono presenti nel dataset originale, ne sono rimaste 30, la cui rimozione verrà effettuata di seguito.
+Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle 56 variabili che sono presenti nel dataset originale, ne sono rimaste 30, elencate di seguito in una tabella.
 
-// mettere una tabella con le feature che sono rimaste
 
 ```{r echo = FALSE}
+# Lista delle variabili rimosse
+variabili_rimosse <- c("FILENAME", "URL", "URLSimilarityIndex",
+                       "CharContinuationRate", "TLDLegitimateProb", "URLCharProb", 
+                       "NoOfObfuscatedChar", "ObfuscationRatio", "LetterRatioInURL", 
+                       "DegitRatioInURL", "SpacialCharRatioInURL", "Title", 
+                       "DomainTitleMatchScore", "HasFavicon", "Robots", "NoOfURLRedirect", 
+                       "NoOfSelfRedirect", "HasSubmitButton", "HasPasswordField", 
+                       "HasCopyrightInfo", "NoOfImage", "NoOfCSS", "NoOfJS", 
+                       "NoOfSelfRef", "NoOfEmptyRef", "NoOfExternalRef")
+
+# Creiamo un dataframe temporaneo con solo le colonne rimosse
+removed_df <- dataset[variabili_rimosse]
+
 dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityIndex",
 "CharContinuationRate", "TLDLegitimateProb", "URLCharProb", "NoOfObfuscatedChar", "ObfuscationRatio", "LetterRatioInURL", "DegitRatioInURL", "SpacialCharRatioInURL", "Title", "DomainTitleMatchScore", "HasFavicon", "Robots", "NoOfURLRedirect", "NoOfSelfRedirect", "HasSubmitButton", "HasPasswordField", "HasCopyrightInfo", "NoOfImage", "NoOfCSS", "NoOfJS", "NoOfSelfRef", "NoOfEmptyRef", "NoOfExternalRef")]
 
 ```
 
-La scelta delle feature da rimuovere è stata fatta in base anche alle RQ che la nostra analisi dovrà rispondere, dove sono esposte le feature interessate da ogni RQ.
+
+```{r echo = FALSE}
+
+# Creare un dataframe per la tabella
+removed_info <- data.frame(Tipo_variabile = sapply(removed_df, class))
+
+# Visualizza la tabella con kable
+kable(removed_info, caption = "Variabili Rimosse dal Dataset")
+
+```
 
 # Statistica descrittiva univariata
 
@@ -169,7 +201,7 @@ stats_df <- data.frame(
 
 # Stampa risultato in tabella
 
-knitr::kable(stats_df, caption = "Indici di Centralità")
+kable(stats_df, caption = "Indici di Centralità")
 
 
 
@@ -195,7 +227,7 @@ dispersion_stats_df <- data.frame(
 )
 
 # Stampa risultato in tabella
-knitr::kable(dispersion_stats_df, caption = "Indici di Dispersione")
+kable(dispersion_stats_df, caption = "Indici di Dispersione")
 ```
 
 Analizziamo nel dettaglio gli indici di dispersione per ogni variabile:
@@ -219,7 +251,7 @@ quartile_stats_df <- data.frame(
 )
 
 # Stampa quartili
-knitr::kable(quartile_stats_df, caption = "Quartili")
+kable(quartile_stats_df, caption = "Quartili")
 
 ```
 Analizziamo nel dettaglio gli indici di dispersione per ogni variabile:
@@ -305,7 +337,7 @@ summary_stats_df <- data.frame(
   NoOfOtherSpecialCharsInURL = as.numeric(summary(dataset_no_outliers_special_chars$NoOfOtherSpecialCharsInURL))
 )
 
-knitr::kable(summary_stats_df, caption = "Summary")
+kable(summary_stats_df, caption = "Summary")
 
 ```
 
@@ -317,6 +349,7 @@ Per confrontare le distribuzioni, andremo a rappresentare dei barplot pre e post
 ```{r echo = FALSE}
 par(mfrow=c(1,2))
 
+#Frequenze assolute URLLength pre-filtraggio
 barplot(
   frequenze_assolute_url,
   main = "Dataset originale",
@@ -326,6 +359,7 @@ barplot(
   border = "black"
 )
 
+#Frequenze assolute URLLength post-filtraggio
 new_frequenze_assolute_url <- table(dataset_no_outliers_url$URLLength)
 barplot(
   new_frequenze_assolute_url,
@@ -336,6 +370,8 @@ barplot(
   border = "black"
 )
 
+
+#Frequenze assolute NoOfOtherSpecialCharsInURL pre-filtraggio
 barplot(
   frequenze_assolute_special_chars,
   main = "Dataset originale",
@@ -344,6 +380,8 @@ barplot(
   col = "orange",
   border = "black"
 )
+
+#Frequenze assolute NoOfOtherSpecialCharsInURL post-filtraggio
 new_frequenze_assolute_special_chars <- table(dataset_no_outliers_special_chars$NoOfOtherSpecialCharsInURL)
 barplot(
   new_frequenze_assolute_special_chars,
@@ -370,13 +408,14 @@ percent_no_outliers_url <- table(dataset_no_outliers_url$label) / nrow(dataset_n
 # Percentuale di phishing nel dataset senza outlier per NoOfOtherSpecialCharsInURL
 percent_no_outliers_special_chars <- table(dataset_no_outliers_special_chars$label) / nrow(dataset_no_outliers_special_chars)
 
+#Tabella visualizzazione percentuali di phishing
 percent_table <- data.frame(
   Dataset = c("Originale", "Senza Outlier URLLength", "Senza Outlier NoOfOtherSpecialCharsInURL"),
   Phishing = c(percent_phishing[1], percent_no_outliers_url[1], percent_no_outliers_special_chars[1]),
   Legittimo = c(percent_phishing[2], percent_no_outliers_url[2], percent_no_outliers_special_chars[2])
 )
 
-knitr::kable(percent_table, caption = "Percentuali phishing")
+kable(percent_table, caption = "Percentuali di phishing")
 
 ```
 
@@ -412,8 +451,6 @@ barplot(
 )
 
 n_outliers <- nrow(outliers_url)
-print(n_outliers)
-
 ```
 
 Andando a flitrare i dataset solo per gli outlier esclusi, notiamo come ci sia una probabilità di phishing del 100%, per i dati al di fuori dell'upper bound (i quali sono 2509), ciò indica che sia URL molto lunghi che URL con molti caratteri speciali, portano a URL di phishing. Ciò ci porta a mantenere gli outlier e ci da un primo indizio su una possibile correlazione tra queste due variabili.
@@ -428,15 +465,18 @@ Per confrontare le distribuzioni, andremo a rappresentare dei barplot per il dat
 
 ```{r echo = FALSE}
 
-# Divisione del dataset
+# Divisione del dataset in URL legittimi e di phishing
 legit_sites <- dataset %>% filter(label == 1)
 phishing_sites <- dataset %>% filter(label == 0)
 
-#Calcolo frequenze assolute URLLength
+#Calcolo frequenze assolute URLLength leggitimi e di phishing
 url_legit <- table(legit_sites$URLLength)
 url_phishing <- table(phishing_sites$URLLength)
 
 par(mfrow=c(1,2))
+
+#Frequenze assolute URLLength legittimi
+
 barplot(
   url_legit,
   main = "Url legittimi",
@@ -446,6 +486,7 @@ barplot(
   border = "black"
 )
 
+#Frequenze assolute URLLength di phishing
 barplot(
   url_phishing,
   main = "Url di phishing",
@@ -468,6 +509,9 @@ other_special_legit <- table(legit_sites$NoOfOtherSpecialCharsInURL)
 other_special_phishing <- table(phishing_sites$NoOfOtherSpecialCharsInURL)
 
 par(mfrow=c(2,2))
+
+#Frequenze assolute NoOfSubDomain legittimi
+
 barplot(
   subdomain_legit,
   main = "Url legittimi",
@@ -476,6 +520,8 @@ barplot(
   col = "lightblue",
   border = "black"
 )
+
+#Frequenze assolute NoOfSubDomain di phishing
 
 barplot(
   subdomain_phishing,
@@ -486,6 +532,8 @@ barplot(
   border = "black"
 )
 
+#Frequenze assolute NoOfOtherSpecialCharsInURL legittimi
+
 barplot(
   other_special_legit,
   main = "Url legittimi",
@@ -494,6 +542,8 @@ barplot(
   col = "lightblue",
   border = "black"
 )
+
+#Frequenze assolute NoOfOtherSpecialCharsInURL di phishing
 
 barplot(
   other_special_phishing,
@@ -535,9 +585,9 @@ colnames(df_stats) <- c("Variabile",
                           "Media_Phishing", "Mediana_Phishing", "Dev_Std_Phishing", "Min_Phishing", "Max_Phishing")
 
 # Visualizzazione delle tabelle
-knitr::kable(legit_stats, caption = "Statistiche descrittive per i siti legittimi")
+kable(legit_stats, caption = "Statistiche descrittive per i siti legittimi")
 
-knitr::kable(phishing_stats, caption = "Statistiche descrittive per i siti di phishing")
+kable(phishing_stats, caption = "Statistiche descrittive per i siti di phishing")
 
 
 ```
@@ -593,7 +643,7 @@ Dalla matrice di correlazione possiamo notare che c'è una correlazione positiva
 
 ## Modello di regressione lineare
 
-```{r echo = FALSE}
+```{r echo = FALSE, warning = FALSE, message = FALSE}
 
 # Creazione dello scatterplot
 ggplot(dataset, aes(x = URLLength, y = NoOfOtherSpecialCharsInURL)) +
@@ -621,14 +671,14 @@ r_squared <- summary(modello_lineare)$r.squared
 print(paste("Coefficiente di Determinazione (R^2):", round(r_squared, 4)))
 
 ```
-$R^2$ = 0.6222 significa che il 62.22% della variabilità nel numero di caratteri speciali può essere spiegata dalla lunghezza dell'URL. Non è un modello perfetto, ma mostra una correlazione moderatamente forte: c'è una tendenza chiara, anche se non tutti i punti seguono perfettamente la retta di regressione.
+Esso sarà $R^2$ = 0.6222, ciò significa che il 62.22% della variabilità nel numero di caratteri speciali può essere spiegata dalla lunghezza dell'URL. Non è un modello perfetto, ma mostra una correlazione moderatamente forte: c'è una tendenza chiara, anche se non tutti i punti seguono perfettamente la retta di regressione.
 
 Si può concludere che la lunghezza dell’URL è un buon indicatore, ma non è l’unico fattore che determina il numero di caratteri speciali negli URL.
 
 ## Modello di regressione logistica
 Dopo aver derivato le variabili più importanti e aver determinato che tra di esse esiste una correlazione positiva. Andiamo a verificare se e come **URLLength** e **NoOfOtherSpecialCharsInURL** influenzano **label**. Per fare ciò utilizzeremo un modello di regressione logistico poiché la variabile sotto analisi è una variabile binaria, sulla quale non si può applicare regressione lineare.
 
-```{r echo = FALSE}
+```{r echo = FALSE, results = 'hide', warning = FALSE}
 modello_logistico <- glm(label ~ URLLength + NoOfOtherSpecialCharsInURL, 
                       data = dataset, family = binomial)
 
@@ -638,6 +688,12 @@ summary(modello_logistico)
 # Calcolo dell'odds ratio per interpretare meglio il modello
 exp(coef(modello_logistico))
 
+
+
+```
+
+
+```{r echo = FALSE}
 # Creazione della tabella con i risultati della regressione logistica
 logistic_results <- data.frame(
   Parametro = c("Intercept", "URLLength", "NoOfOtherSpecialCharsInURL"),
@@ -648,11 +704,10 @@ logistic_results <- data.frame(
   Odds_Ratio = c(27.3184202, 0.9885664, 0.2375946)
 )
 
-# Creazione della tabella base
-knitr::kable(logistic_results, 
+# Visualizzazione tabella per risultati regressione logistica
+kable(logistic_results, 
       caption = "Risultati della regressione logistica",
       col.names = c("Parametro", "$β$ (Coefficiente)", "Errore Standard", "Z-value", "P-value", "Odds Ratio"))
-
 ```
 
 La tabella mostra i risultati della regressione logistica per la classificazione di phishing (0) vs legittimo (1) in base a URLLength e NoOfOtherSpecialCharsInURL. Ecco il significato di ogni colonna:
@@ -693,23 +748,24 @@ In conclusione:
 - **Gli URL con più caratteri speciali sono fortemente associati al phishing**.
 
 # Analisi dei cluster
+Per effettuare il clustering, dobbiamo innanzitutto scegliere il tipo di clustering che si vuole applicare. Nel nostro caso abbiamo scelto **l'algoritmo non gerarchico K-means** sulla variabile **URLLength**, per individuare possibili pattern nascosti che non siamo riusciti ad individuare fino ad ora. La scelta è stata presa in base al tipo di dati a disposizione e alle considerazioni fatte in precedenza. Prima di passare all'applicazione del clustering, dobbiamo derivare quale è il k ottimale di cluster da utilizzare per l'algoritmo.
 
 ## Metodo dell'Elbow
 
-Abbiamo applicato l'**algoritmo K-Means** alla variabile **URLLength** per individuare gruppi di URL con lunghezze simili. Per scegliere il numero ottimale di cluster, abbiamo usato il **metodo dell'Elbow**, che analizza la riduzione del **Within-Cluster Sum of Squares (WCSS)** al variare di \( K \). Dal grafico ottenuto, possiamo individuare il **punto di flessione** in cui la riduzione del WCSS rallenta, suggerendo il numero ideale di cluster. Se necessario, possiamo confermare la scelta con altre metriche come il **Silhouette Score**.
+Per scegliere il numero ottimale di cluster, utilizzeremo il **metodo dell'Elbow**, che analizza la riduzione del **Within-Cluster Sum of Squares (WCSS)** al variare di \( K \). Dal grafico ottenuto, individueremo il **punto di flessione** in cui la riduzione del WCSS rallenta, suggerendo il numero ideale di cluster. Se necessario, possiamo confermare la scelta con altre metriche come il **Silhouette Score**.
 
 
 ```{r echo = FALSE}
 # Estrarre solo la colonna URLLength
-X <- dataset$URLLength
+column_URLLength <- dataset$URLLength
 
 # Standardizzare i dati
-X_scaled <- scale(X)
+column_URLLength_scaled <- scale(column_URLLength)
 
 # Calcolare il WCSS per diversi valori di K
 wcss <- numeric(10) # Creiamo un vettore per i risultati
 for (k in 1:10) {
-  kmeans_result <- kmeans(X_scaled, centers = k, nstart = 10)
+  kmeans_result <- kmeans(column_URLLength_scaled, centers = k, nstart = 10)
   wcss[k] <- kmeans_result$tot.withinss
 }
 
@@ -728,7 +784,7 @@ print(elbow_plot)
 ```
 Dal grafico del metodo dell'Elbow, il punto di flessione sembra situarsi intorno a **K = 2 o K = 3**, poiché dopo questi valori la riduzione del **WCSS** diventa meno significativa. Tuttavia, per confermare la scelta ottimale del numero di cluster, vogliamo calcolare il **Silhouette Score**, che ci permetterà di valutare la coesione e la separabilità dei cluster in modo più quantitativo.
 
-## Silhouette dell'Elbow
+## Metodo della Silhouette
 
 ```{r echo = FALSE}
 # Selezione della variabile URLLength per il clustering
@@ -749,20 +805,19 @@ silhouette_scores <- sapply(k_values, silhouette_analysis)
 plot(k_values, silhouette_scores, type = "b", pch = 19,
      xlab = "Numero di cluster", ylab = "Silhouette media",
      main = "Metodo della silhouette per la scelta di k")
-
-# Il numero ottimale di cluster è quello con la silhouette media più alta
-optimal_k <- which.max(silhouette_scores)
-cat("Il numero ottimale di cluster è:", k_values[optimal_k], "\n")
+points(k_values[1], silhouette_scores[1], col = "red", cex = 2, lwd = 2)
 ```
 
 Sulla base dei risultati della **silhouette** e del **metodo dell'elbow**, il numero ottimale di cluster è **2**. Poiché entrambi i metodi confermano questa scelta, possiamo procedere con il **k-means con k = 2** per segmentare i dati in due gruppi distinti basati sulla variabile `URLLength`.
 
-## Applicazione del Kmeans
-```{r echo = FALSE}
+## Applicazione del K-means
+L'applicazione del k-means è stata fatta, come già spiegato, con **k = 2**, utilizzando come riferimento sia il metodo dell'elbow che il metodo della silhouette. Abbiamo inoltre utilizzato un **nstart = 10**, poiché il k-means dipende dalla scelta casuale dei centroidi iniziali e per mitigare questo problema abbiamo eseguito l'algoritmo 10 volte differenti, prelevando il **minor errore quadratico totale (WCSS)**, tra tutti i risultati ottenuti.
+
+```{r echo = FALSE, results = 'hide'}
+#K-means con k = 2
 km<-kmeans(data_cluster, center=2, iter.max=10, nstart=10)
-#km #visualizza i risultati ottenuti con kmeans
 ```
-//aggiungere qualche stampa del kmeans
+
 
 ## Analisi della bontà del clustering
 Abbiamo deciso di calcolare alcune **metriche di bontà** per valutare la qualità del clustering ottenuto con K-Means. In particolare, abbiamo analizzato i **centroidi dei cluster**, la **varianza interna ai cluster (WCSS)**, la **separazione tra i cluster (BCSS)** e l'**indice di Calinski-Harabasz**, che confronta i due valori per misurare l'efficacia della suddivisione. 
@@ -770,43 +825,341 @@ Abbiamo deciso di calcolare alcune **metriche di bontà** per valutare la qualit
 ```{r echo = FALSE}
 #centroidi del cluster
 centroids <- km$centers
-cat("centroids", centroids, "\n")
-
-#vedere gli altri che significano
 
 #Calcolare WCSS 
 wcss <- sum(km$withinss)
 
 #Calcolare BCSS
 global_centroid <- mean(data_cluster)
-cat("global_centroid", global_centroid, "\n")
 
-bcss <- 0
+# Identificare i due cluster
+cluster1 <- data_cluster[km$cluster == 1]
+cluster2 <- data_cluster[km$cluster == 2]
 
-cluster_points <- km$cluster
-cluster_size <- length(cluster_points)  # Numero di punti nel cluster
+# Centroide di ciascun cluster
+centroid1 <- mean(cluster1)
+centroid2 <- mean(cluster2)
+
+# Numero di punti per ciascun cluster
+size1 <- length(cluster1)
+size2 <- length(cluster2)
   
-# Calcolo della Between-Cluster Sum of Squares (BCSS)
-bcss <- bcss + cluster_size * (centroids - global_centroid)^2
+  # Calcolo di BCSS come somma pesata delle distanze al quadrato tra i centroidi di ciascun cluster e il centroide globale
+bcss <- size1 * (centroid1 - global_centroid)^2 + size2 * (centroid2 - global_centroid)^2
 
 #Calcolare l'indice di Calinski-Harabasz
 n <- length(data_cluster)
 k <- length(unique(km$cluster))
 ch_index <- (bcss / (k-1)) / (wcss / (n-k))
 
+results_table <- data.frame(
+  Metriche = c("Centroide Cluster 1", "Centroide Cluster 2", "Centroide Globale", 
+               "WCSS", "BCSS", "Calinski-Harabasz"),
+  Valori = format(c(centroid1, centroid2, global_centroid, 
+             wcss, bcss, ch_index), scientific = FALSE)
+)
+
+
 #Risultati
-cat("WCSS:", wcss, "\n")
-cat("BCSS:", bcss, "\n")
-cat("Calinski-Harabasz:", ch_index, "\n")
+kable(results_table, caption = "Risultati del Clustering")
 
 ```
  
 
-Dai risultati emerge che i due cluster individuati sono ben distinti, con centroidi molto distanti tra loro (**282.13 e 32.57**). Il valore elevato della **BCSS (1.4 miliardi)** indica che i cluster sono ben separati, mentre la **WCSS (12.6 milioni)** mostra una certa dispersione interna. L'**indice di Calinski-Harabasz (2.69 milioni)** è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa.  
-
-In conclusione, il clustering risulta efficace, con gruppi ben separati e una buona coesione interna.
 
 
+Dai risultati emerge che i due cluster individuati sono ben distinti, con centroidi molto distanti tra loro. 
+La media generale dei dati è vicina al primo centroide, dunque, la maggior parte dei dati appartiene al primo cluster.
+
+Il valore elevato della **BCSS** indica che i cluster sono ben separati, mentre la **WCSS** mostra una certa dispersione interna. L'**indice di Calinski-Harabasz** è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa.  
+
+In conclusione, il clustering risulta essere efficace, con gruppi ben separati e una buona coesione interna.
+
+## Analisi descrittiva dei cluster
+Dopo aver valutato la bontà dei cluster, andiamo a determinare in maniera quantitativa, come sono state divise le osservazioni del dataset.
+
+```{r echo = FALSE}
+# Calcolo delle statistiche per ogni variabile della RQ1
+
+cluster1 <- data.frame(cluster1)
+cluster2 <- data.frame(cluster2)
+colnames(cluster1) <- "URLLength"
+colnames(cluster2) <- "URLLength"
+
+
+
+stats_cluster_df <- data.frame(
+  Clusters = c("Cluster1", "Cluster2"),
+  Minimo = c(min(cluster1$URLLength), min(cluster2$URLLength)),
+  Massimo = c(max(cluster1$URLLength), max(cluster2$URLLength)),
+  Media = c(mean(cluster1$URLLength), mean(cluster2$URLLength)),
+  Mediana = c(median(cluster1$URLLength), median(cluster2$URLLength)),
+  Deviazione_Standard = c(sd(cluster1$URLLength), sd(cluster2$URLLength))
+)
+
+
+# Visualizzazione delle tabelle per confronto dati
+kable(stats_cluster_df, caption = "Statistiche descrittive per i due cluster")
+
+
+```
+I due cluster assumono un significato più importante dopo aver visualizzato gli indici di centralità e di dispersione, infatti avremo che:
+
+- **Cluster1**: Questo cluster contiene URL significativamente più lunghi, con un'alta variabilità (deviazione standard elevata). La mediana è inferiore alla media, indicando la presenza di URL estremamente lunghi che alzano la media. Dunque, in questo cluster sono stati raggruppati tutti gli URL più lunghi che sono di phishing, dove sono inclusi anche gli outliers.
+- **Cluster2**: Gli URL in questo cluster sono molto più corti e hanno una distribuzione più compatta, con una bassa variabilità. La media e la mediana sono vicine, segnalando una distribuzione più simmetrica rispetto al Cluster 1. Il Cluster 2 rappresenta dunque URL più corti, che potrebbero essere più tipici di siti legittimi.
+
+Dalle analisi precedenti potremmo affermare che Cluster1, conterrà solo siti di phishing e Cluster2 conterrà tutti i siti legittimi, con una piccola parte di siti di phishing.
+Quindi la divisione rispetta più o meno le caratteristiche che sono state derivate nelle analisi precedenti.
+
+## Grafici per confronto cluster
+Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una visione più diretta ed esplicativa della differenza tra i due cluster.
+
+```{r echo = FALSE}
+#Salvataggio di Cluster nel data frame
+dataset$Cluster <- as.factor(km$cluster)
+
+#Plot per i cluster
+ggplot(dataset, aes(x = Cluster, y = URLLength, color = Cluster)) +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.7) +
+  labs(title = "Distribuzione dei dati di URLLength per Cluster",
+       x = "Cluster",
+       y = "Lunghezza URL") +
+  theme_minimal()
+
+#Boxplot per i cluster
+
+
+ggplot(dataset, aes(x = Cluster, y = URLLength, fill = Cluster)) +
+  geom_boxplot() +
+  labs(
+       x = "Cluster",
+       y = "Lunghezza URL") +
+  theme_minimal()
+
+```
+
+In questi due grafici, si nota ancora di più la netta distinzione che c'è tra i due cluster, dove il Cluster2 ha url più corti, mentre il Cluster1 ha url molto più lunghi. Inoltre la concentrazione dei dati è diversa, poiché nel primo cluster sono presenti outliers più grandi e che quindi creano più dispersione dei dati.
+
+## Caricamento e pulizia dataset generato da ChatGPT
+Qui applicheremo gli stessi processi iniziali applicati sul dataset principale, per capire se il dataset ha generato in maniera corretta e significativa i dati.
+
+```{r}
+LLM_dataset <- read.csv("Dataset_Phishing_ChatGPT.csv", sep = ",", header = TRUE)
+
+```
+
+Da una prima analisi del contenuto delle tabelle già si può
+```{r echo = FALSE, results = 'hide'}
+
+#Visualizzazione informazioni principali del dataset
+str(LLM_dataset)
+
+```
+Da una prima analisi del contenuto delle tabelle, già si può notare come la feature TLD non sia stata riempita correttamente, infatti, contiene tutti valori null. Fortunatamente è una variabile che non influirà sulle analisi future, dunque la rimaniamo all'interno del dataset, non prendendola in considerazione. Un'altra osservazione importante da esporre è che i dati numerici risultano essere più facili da generare e sono più significativi rispetto a dati qualitativi come le stringhe, dove non sappiamo con certezza se abbia generato dei domini veritieri.
+
+```{r echo = FALSE, results = 'hide'}
+
+#Controllo presenza valori mancanti nel dataset
+colSums(is.na(LLM_dataset))
+
+```
+
+## Analisi dei cluster dataset generato da chatGPT
+
+Applicheremo lo stesso processo che è stato applicato al dataset originale sulla variabile URLLength, per notare differenze tra questo dataset e quello originale.
+
+### Metodo dell'Elbow
+
+```{r echo = FALSE}
+# Estrarre solo la colonna URLLength
+columnLLM_URLLength <- LLM_dataset$URLLength
+
+# Standardizzare i dati
+columnLLM_URLLength_scaled <- scale(columnLLM_URLLength)
+
+# Calcolare il WCSS per diversi valori di K
+wcss_LLM <- numeric(10) # Creiamo un vettore per i risultati
+for (k in 1:10) {
+  kmeans_LLM_result <- kmeans(columnLLM_URLLength_scaled, centers = k, nstart = 10)
+  wcss_LLM[k] <- kmeans_LLM_result$tot.withinss
+}
+
+# Creare il grafico del metodo dell'Elbow
+elbow_plot_LLM <- ggplot(data.frame(K = 1:10, WCSS = wcss_LLM), aes(x = K, y = WCSS)) +
+  geom_point() +
+  geom_line() +
+  
+  labs(title = "Metodo dell'Elbow - URLLength_LLM",
+       x = "Numero di Cluster K",
+       y = "Within-cluster Sum of Squares (WCSS)") +
+  theme_minimal()
+
+# Mostrare il grafico
+print(elbow_plot_LLM)
+
+```
+
+Anche in questo caso con il **metodo dell'elbow** avremo che **K = 2 o K = 3**, ciò significa che avremo bisogno del metodo della silhouette per poter stabilire il numero k di cluster ottimale. 
+
+
+### Metodo della Silhouette
+
+```{r echo = FALSE}
+# Selezione della variabile URLLength per il clustering
+data_cluster_LLM <- LLM_dataset$URLLength
+
+# Funzione per calcolare il coefficiente di silhouette medio per diversi k
+silhouette_analysis_LLM <- function(k) {
+  km_LLM <- kmeans(data_cluster_LLM, centers = k, nstart = 25)
+  sil_LLM <- silhouette(km_LLM$cluster, dist(data_cluster_LLM))
+  mean(sil_LLM[, 3])  # Restituisce il coefficiente di silhouette medio
+}
+
+# Eseguiamo il calcolo per k da 2 a 10 cluster
+k_values_LLM <- 2:10
+silhouette_scores_LLM <- sapply(k_values_LLM, silhouette_analysis_LLM)
+
+# Visualizziamo i risultati
+plot(k_values_LLM, silhouette_scores_LLM, type = "b", pch = 19,
+     xlab = "Numero di cluster", ylab = "Silhouette media",
+     main = "Metodo della silhouette per la scelta di k")
+points(k_values_LLM[1], silhouette_scores_LLM[1], col = "red", cex = 2, lwd = 2)
+```
+
+Il grafico della silhouette restituisce come valore ottimale **k = 10**, ma con una distanza molto piccola tra le silhouette medie, ciò significa che comunque non è detto che una separazione cosi netta di cluster, porterà ad un risultato ottimale. Dunque procederemo con **k = 2**, forti anche dell'analisi fatta con il metodo dell'elbow.
+
+### Applicazione del K-means
+L'applicazione del k-means è stata fatta anche in questo caso con **k = 2**, **nstart = 10** e **iter.max = 10**.
+
+```{r echo = FALSE, results = 'hide'}
+#K-means con k = 2
+km_LLM <- kmeans(data_cluster_LLM, center=2, iter.max=10, nstart=10)
+```
+
+### Analisi della bontà del clustering
+Valutiamo i cluster con le metriche di bontà già utilizzate per il dataset originale.
+
+```{r echo = FALSE}
+#centroidi del cluster
+centroids_LLM <- km_LLM$centers
+
+#Calcolare WCSS 
+wcss_LLM <- sum(km_LLM$withinss)
+
+#Calcolare BCSS
+global_centroid_LLM <- mean(data_cluster_LLM)
+
+# Identificare i due cluster
+cluster1_LLM <- data_cluster_LLM[km_LLM$cluster == 1]
+cluster2_LLM <- data_cluster_LLM[km_LLM$cluster == 2]
+
+# Centroide di ciascun cluster
+centroid1_LLM <- mean(cluster1_LLM)
+centroid2_LLM <- mean(cluster2_LLM)
+
+# Numero di punti per ciascun cluster
+size1_LLM <- length(cluster1_LLM)
+size2_LLM <- length(cluster2_LLM)
+  
+  # Calcolo di BCSS come somma pesata delle distanze al quadrato tra i centroidi di ciascun cluster e il centroide globale
+bcss_LLM <- size1_LLM * (centroid1_LLM - global_centroid_LLM)^2 + size2_LLM * (centroid2_LLM - global_centroid_LLM)^2
+
+#Calcolare l'indice di Calinski-Harabasz
+n_LLM <- length(data_cluster_LLM)
+k_LLM <- length(unique(km_LLM$cluster))
+ch_index_LLM <- (bcss_LLM / (k_LLM-1)) / (wcss_LLM / (n_LLM-k_LLM))
+
+results_table <- data.frame(
+  Metriche = c("Centroide Cluster 1", "Centroide Cluster 2", "Centroide Globale", 
+               "WCSS", "BCSS", "Calinski-Harabasz"),
+  Valori = format(c(centroid1_LLM, centroid2_LLM, global_centroid_LLM, 
+             wcss_LLM, bcss_LLM, ch_index_LLM), scientific = FALSE)
+)
+
+
+#Risultati
+kable(results_table, caption = "Risultati del Clustering")
+
+```
+
+Dai risultati di queste analisi emerge che:
+
+- I due cluster sono ben separati: il **Calinski-Harabasz** e BCSS elevato confermano la distinzione tra URL corti e lunghi;
+- Il grado di coesione all'interno di uno stesso cluster è buono, ma potrebbe essere migliore, poiché il WCSS è elevato.
+
+Per il momento i dati rispecchiano ciò che è stato derivato con il dataset originale, bisogna capire ora la centralità e la dispersione di questi dati.
+
+## Analisi descrittiva dei cluster generati da ChatGPT
+Dopo aver valutato la bontà dei cluster, andiamo a determinare in maniera quantitativa, come sono state divise le osservazioni del dataset.
+
+```{r echo = FALSE}
+# Calcolo delle statistiche per ogni variabile della RQ1
+
+cluster1_LLM <- data.frame(cluster1_LLM)
+cluster2_LLM <- data.frame(cluster2_LLM)
+colnames(cluster1_LLM) <- "URLLength"
+colnames(cluster2_LLM) <- "URLLength"
+
+
+
+stats_cluster_LLM_df <- data.frame(
+  Clusters = c("Cluster1", "Cluster2"),
+  Minimo = c(min(cluster1_LLM$URLLength), min(cluster2_LLM$URLLength)),
+  Massimo = c(max(cluster1_LLM$URLLength), max(cluster2_LLM$URLLength)),
+  Media = c(mean(cluster1_LLM$URLLength), mean(cluster2_LLM$URLLength)),
+  Mediana = c(median(cluster1_LLM$URLLength), median(cluster2_LLM$URLLength)),
+  Deviazione_Standard = c(sd(cluster1_LLM$URLLength), sd(cluster2_LLM$URLLength))
+)
+
+
+# Visualizzazione delle tabelle per confronto dati
+kable(stats_cluster_LLM_df, caption = "Statistiche descrittive per i due cluster")
+
+
+```
+Anche in questo caso i cluster assumono un significato più profondo che ci consente di individuare che:
+
+- **Cluster1**: Questo cluster contiene URL più lunghi, con una variabilità moderata. La mediana vicina alla media suggerisce una distribuzione relativamente bilanciata.
+- **Cluster2**: Gruppo di URL moderatamente più corti, con una minore dispersione rispetto al Cluster 1.
+
+In questo caso avremo che i due cluster sono distinti, rispettando gli andamenti visti per i due cluster del dataset originale, ma i dati sono distrbuiti in maniera quasi normale poiché chatGPT li ha generati automaticamente in questo modo. Ciò vuol dire che è più complicato avere outliers che influenzino di molto la distribuzione dei dati.
+
+## Grafici per confronto cluster
+Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una visione più diretta ed esplicativa della differenza tra i due cluster.
+
+```{r echo = FALSE}
+
+#Salvataggio di Cluster nel data frame
+dataset$Cluster_LLM <- as.factor(km_LLM$cluster)
+
+#Plot per i cluster
+ggplot(dataset, aes(x = Cluster_LLM, y = URLLength, color = Cluster_LLM)) +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.7) +
+  labs(title = "Distribuzione dei dati di URLLength per Cluster",
+       x = "Cluster_LLM",
+       y = "Lunghezza URL") +
+  theme_minimal()
+
+#Boxplot per i cluster
+ggplot(dataset, aes(x = Cluster_LLM, y = URLLength, fill = Cluster_LLM)) +
+  geom_boxplot() +
+  labs(
+       x = "Cluster_LLM",
+       y = "Lunghezza URL") +
+  theme_minimal()
+
+```
+
+Da qui si può comprendere meglio la differenza con il clustering effettuato sul dataset originale. Infatti, nel dataset originale, il **Cluster 2 è estremamente compatto**, con URL molto corti e senza variazione significativa,
+mentre, nel dataset generato da ChatGPT, il **Cluster 2 ha maggiore dispersione**, indicando più variabilità nella lunghezza degli URL.
+
+Inoltre, nel dataset originale, il **Cluster 1 mostra alcuni outlier con lunghezze di URL superiori a 1500**.
+Nel dataset generato, il **Cluster 1 ha una distribuzione più uniforme**, ma alcuni URL lunghi sono comunque presenti in entrambi i dataset.
+
+Infine, nel dataset originale, **la separazione tra Cluster 1 e Cluster 2 è netta**, dove il Cluster 1 ha lunghezze più grandi e il Cluster 2 ha URL molto corti e uniformi.
+Nel dataset generato, **i cluster sono più sovrapposti e il Cluster 2 mostra più variabilità**, suggerendo che i dati generati non replicano perfettamente la struttura originale.
+
+Dunque, il dataset generato mostra più sovrapposizione e variabilità interna nei cluster, suggerendo che il modello di generazione potrebbe aver introdotto una distribuzione meno strutturata rispetto alla realtà. Ciò comporta che **non è possibile sostituire un dataset reale con un dataset generato**, poiché introduce maggiore confusione e variazione nei dati.
 
 
 # Inferenza Statistica
