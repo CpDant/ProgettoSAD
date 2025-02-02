@@ -19,12 +19,12 @@ output:
 # Introduzione
 
 ## Descrizione del problema
-Il phishing rappresenta una delle minacce informatiche più diffuse e pericolose, il cui obiettivo è sottrarre informazioni sensibili come credenziali di accesso, numeri di carte di credito e dati personali. Gli attacchi di phishing avvengono principalmente attraverso URL ingannevoli che simulano siti legittimi per indurre gli utenti a fidarsi e condividere i propri dati.
+Il phishing rappresenta una delle minacce informatiche più **diffuse e pericolose**, il cui obiettivo è sottrarre informazioni sensibili come credenziali di accesso, numeri di carte di credito e dati personali. Gli attacchi di phishing avvengono principalmente attraverso URL ingannevoli che simulano siti legittimi per indurre gli utenti a fidarsi e condividere i propri dati.
 
 La rilevazione tempestiva degli URL di phishing è essenziale per proteggere gli utenti e ridurre le conseguenze di questi attacchi. Un'analisi statistica delle proprietà degli URL può:
 
-- *Identificare schemi ricorrenti negli URL di phishing*;
-- *Evidenziare le caratteristiche più influenti per distinguere un URL legittimo da uno fraudolento*.
+- **Identificare schemi ricorrenti negli URL di phishing**;
+- **Evidenziare le caratteristiche più influenti per distinguere un URL legittimo da uno fraudolento**.
 
 ## Descrizione del dataset
 
@@ -40,20 +40,20 @@ Il dataset è particolarmente utile per l'addestramento di modelli di machine le
 
 \newpage
 ## Obiettivi del Progetto
-Questo progetto si propone di rispondere a tre domande di ricerca principali:
+Questo progetto si propone di rispondere a due domande di ricerca principali:
 
 1. **Quali caratteristiche degli URL sono maggiormente associate alla probabilità che un sito sia di phishing?**
     - Variabili analizzate:
-        - `URLLength` (lunghezza dell'URL). 
-        - `NoOfSubDomain` (numero di sottodomini).
-        - `NoOfOtherSpecialCharsInURL` (numero di caratteri speciali nell'URL).
+        - **URLLength**: Lunghezza dell'URL; 
+        - **NoOfSubDomain** Numero di sottodomini;
+        - **NoOfOtherSpecialCharsInURL**: Numero di caratteri speciali nell'URL;
+        - **label**: Classificazione dell'URL (0 phishing, 1 legittimo).
         
-        Tutte e tre le variabili analizzate sono di tipo discreto ovvero possono assumere solo un insieme finito di valori distinti.
+Tutte le variabili analizzate sono di tipo discreto ovvero possono assumere solo un insieme finito di valori distinti.
         
         
 2. **È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?**
-	I modelli linguistici di grandi dimensioni, possono essere utilizzati per generare dati sintetici basati su pattern appresi da dataset reali. Questa domanda mira a esplorare se tali dati sintetici possano:
-    - Arricchire i dataset esistenti, ad esempio simulando URL legittimi o di phishing realistici.
+	I modelli linguistici di grandi dimensioni, possono essere utilizzati per generare dati sintetici basati su pattern appresi da dataset reali. Questa domanda mira a esplorare se tali dati sintetici possano arricchire i dataset esistenti (ad esempio simulando URL legittimi o di phishing realistici).
 
 # Caricamento e pulizia del dataset
 
@@ -71,10 +71,10 @@ library(knitr)
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
 
-In questa fase, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. 
+Inoltre, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. 
 Sono stati effettuati due controlli fondamentali:
 
-- **Controllo tipi di dati**: Abbiamo innanzitutto controllato che i tipi di dati corrispondessero con la loro rappresentazione nella colonna specifica. I risultati hanno dato esito positivo e non c'è stato bisogno di modificare il dataset
+- **Controllo tipi di dati**: Abbiamo innanzitutto controllato che i tipi di dati corrispondessero con la loro rappresentazione nella colonna specifica. I risultati hanno dato esito positivo e non c'è stato bisogno di modificare il dataset.
 - **Controllo valori mancanti**: Anche in questo caso il controllo ha dato esito positivo. Dunque non ci sono righe con valori mancanti all'interno del dataset.
 
 ```{r echo = FALSE, results = 'hide'}
@@ -91,10 +91,10 @@ str(dataset)
 colSums(is.na(dataset))
 
 ```
-
+\newpage
 
 ## Rimozione feature ridondanti
-Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle 56 variabili che sono presenti nel dataset originale, ne sono rimaste 30, elencate di seguito in una tabella.
+Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle **56** variabili che sono presenti nel dataset originale, ne sono rimaste **30**, elencate di seguito in una tabella.
 
 
 ```{r echo = FALSE}
@@ -127,19 +127,20 @@ kable(removed_info, caption = "Variabili Rimosse dal Dataset")
 
 ```
 
+\newpage
 # Statistica descrittiva univariata
 
 ## Analisi dei dati per RQ1
 Le feature che metteremo sotto analisi per la RQ1 sono le seguenti:
 
-- `URLLength`: Lunghezza dell'URL;
-- `NoOfSubDomain`: I sottodomini sono URL univoci che risiedono sul dominio acquistato,                      come estensione davanti al dominio normale. Qui viene identficato il                      numero di caratteri del sottodominio;
-- `NoOfOtherSpecialCharsInURL`: Rappresenta il numero di caratteri speciali in un URL.
+- **URLLength**: Lunghezza dell'URL;
+- **NoOfSubDomain**: I sottodomini sono URL univoci che risiedono sul dominio acquistato,                      come estensione davanti al dominio normale. Qui viene identficato il                      numero di caratteri del sottodominio;
+- **NoOfOtherSpecialCharsInURL**: Rappresenta il numero di caratteri speciali in un URL.
 Procediamo con un'analisi esplorativa di queste variabili.
 
 ### Frequenze assolute e barplot
 
-Dopo aver applicato le funzioni di calcolo in R, ecco i risultati ottenuti. 
+Di seguito vengono mostrati i grafici delle frequenze assolute. 
 
 ```{r echo = FALSE}
 #Calcolo frequenze assolute
@@ -178,7 +179,7 @@ barplot(
 par(mfrow=c(1,1))
 ```
 
-Come si può notare dai grafici, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli outlier da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati, per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
+Come si può notare dai grafici, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli **outlier** da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati, per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
 
 ### Indici di centralità
 
@@ -214,7 +215,6 @@ Analizziamo nel dettaglio gli indici di centralità per ogni variabile:
 - **NoOfOtherSpecialCharsInURL**: Simile a quella di **NoOfSubDomain**, questa variabile è fortemente concentrata verso il basso, con la maggior parte degli URL che contengono 1 solo carattere speciale. Ci sono però alcuni URL con un numero molto elevato di caratteri speciali (fino a 87), che spostano la media verso l'alto.
 
 ### Indici di dispersione 
-Anche in questo caso utilizzeremo le funzioni di R per calcolare gli indici di dispersione per le variabili che stiamo analizzando.
 
 ```{r echo = FALSE}
 
@@ -232,7 +232,7 @@ kable(dispersion_stats_df, caption = "Indici di Dispersione")
 
 Analizziamo nel dettaglio gli indici di dispersione per ogni variabile:
 
-- **URLLength**: La varianza  riflette anch'essa la variabilità complessiva dei dati, ma è influenzata dagli outlier. Infatti la deviazione standard è moderata rispetto alla media indicando una variabilità significativa, ma non estrema. Dunque, la lunghezza degli URL è distribuita in modo relativamente coerente intorno alla media, con una maggiore densità vicino alla mediana (28).
+- **URLLength**: La varianza riflette anch'essa la variabilità complessiva dei dati, ma è influenzata dagli outlier. Infatti la deviazione standard è moderata rispetto alla media indicando una variabilità significativa, ma non estrema. Dunque, la lunghezza degli URL è distribuita in modo relativamente coerente intorno alla media, con una maggiore densità vicino alla mediana.
 - **NoOfSubDomain**: La varianza e la deviazione standard sono basse, indicando una distribuzione stretta attorno alla media. Dunque è una variabile poco dispersa, concentrata in un intervallo ristretto, con valori superiori a 1 rari.
 - **NoOfOtherSpecialCharsInURL**: La varianza e la deviazione standard riflettono una moderata dispersione intorno alla media. Dunque, la variabile è asimmetrica positiva, con la maggior parte dei dati vicini a 1 e pochi URL con molti caratteri speciali che aumentano la dispersione.
 
@@ -254,9 +254,9 @@ quartile_stats_df <- data.frame(
 kable(quartile_stats_df, caption = "Quartili")
 
 ```
-Analizziamo nel dettaglio gli indici di dispersione per ogni variabile:
+Anilizziamo nel dettaglio i quartili per ogni variabile:
 
-- **URLLength**: La lunghezza dell'URL ha una distribuzione asimmetrica positiva, con la maggior parte dei dati concentrata tra 24 e 34, ma valori estremamente alti (oltre 1000) che rappresentano eccezioni.
+- **URLLength**: Abbiamo conferma che la lunghezza dell'URL ha una distribuzione asimmetrica positiva, con la maggior parte dei dati concentrata tra 24 e 34, ma valori estremamente alti (oltre 1000) che rappresentano eccezioni.
 - **NoOfSubDomain**: La concentrazione dei quartili (Q1 = Q2 = Q3 = 1) evidenzia che il numero di sottodomini è stabile e poco variabile. Infatti, solo pochi URL oltre Q3 contengono più di 1 sottodominio, con un massimo isolato di 8.
 - **NoOfOtherSpecialCharsInURL**: La maggior parte degli URL contiene pochissimi caratteri speciali, con il 75% degli URL che ha al massimo 3 caratteri speciali. La presenza di un massimo di 87 caratteri speciali crea una alta variabilità, come confermato dalla deviazione standard e dal range ampio.
 
@@ -301,7 +301,7 @@ par(mfrow=c(1,1))
 I boxplot sono molto schiacciati e poco visualizzabili, dovuto dalla variabilità elevata dei dati. Ciò ci porta ad analizzare e capire come gestire gli outlier, soprattutto nella variabile **URLLength** e **NoOfOtherSpecialCharsInURL**. Proviamo a rimuovere gli outlier per capire se essi sono significativi per le analisi successive.
 
 ### Rimozione outlier tramite metodo dell'IQR
-Abbiamo già calcolato precedente l'IQR, dunque, ci basta semplicemente quantificare il limite superiore e inferiore, oltre il quale i nostri dati saranno considerati outlier.
+Abbiamo già calcolato precedente l'IQR, dunque, ci basta semplicemente **quantificare il limite superiore e inferiore**, oltre il quale i nostri dati saranno considerati outlier.
 
 ```{r echo = FALSE}
 # Calcolo limiti per identificazione outlier
@@ -311,16 +311,20 @@ q3_URL <- quantile(dataset$URLLength, 0.75)
 iqr_URL <- IQR(dataset$URLLength)
 lower_bound_URL <- q1_URL - 1.5 * iqr_URL
 upper_bound_URL <- q3_URL + 1.5 * iqr_URL
-cat("Lower Bound URLLength: ", lower_bound_URL, "\n")
-cat("Upper Bound URLLength: ", upper_bound_URL, "\n")
 
 q1_special_chars <- quantile(dataset$NoOfOtherSpecialCharsInURL, 0.25)
 q3_special_chars <- quantile(dataset$NoOfOtherSpecialCharsInURL, 0.75)
 iqr_special_chars <- IQR(dataset$NoOfOtherSpecialCharsInURL)
 lower_bound_special_chars <- q1_special_chars - 1.5 * iqr_special_chars
 upper_bound_special_chars <- q3_special_chars + 1.5 * iqr_special_chars
-cat("Lower Bound NoOfOtherSpecialCharsInURL: ", lower_bound_special_chars, "\n")
-cat("Upper Bound NoOfOtherSpecialCharsInURL: ", upper_bound_special_chars, "\n")
+
+#Tabella per visualizzare i limiti delle variabili
+
+bounds_df <- data.frame(
+  Limiti = c("Limite inferiore", "Limite superiore"),
+  URLLength = c(lower_bound_URL, upper_bound_URL),
+  NoOfOtherSpecialCharsInURL = c(lower_bound_special_chars, upper_bound_special_chars)
+)
 
 # Rimozione osservazioni del dataset
 
@@ -337,6 +341,7 @@ summary_stats_df <- data.frame(
   NoOfOtherSpecialCharsInURL = as.numeric(summary(dataset_no_outliers_special_chars$NoOfOtherSpecialCharsInURL))
 )
 
+kable(bounds_df, caption = "Limiti per URLLength e NoOfOtherSpecialCharsInURL")
 kable(summary_stats_df, caption = "Summary")
 
 ```
@@ -419,7 +424,7 @@ kable(percent_table, caption = "Percentuali di phishing")
 
 ```
 
-Le probabilità mostrano un un decremento della presenza di URL di phishing sia nel caso in cui vi è la rimozione degli outlier di **URLLength** che di **NoOfOtherSpecialCharsInURL**. Ciò dimostra che i dati rimossi hanno un'importante significato nell'individuazione degli URL di phishing o legittimi.
+Le probabilità mostrano un decremento della presenza di URL di phishing sia nel caso in cui vi è la rimozione degli outlier di **URLLength** che di **NoOfOtherSpecialCharsInURL**. Ciò dimostra che i dati rimossi hanno un'importante significato nell'individuazione degli URL di phishing o legittimi.
 
 ```{r echo = FALSE}
 # Calcolo frequenze relative nel dataset con soli outliers per URLLength
@@ -453,11 +458,11 @@ barplot(
 n_outliers <- nrow(outliers_url)
 ```
 
-Andando a flitrare i dataset solo per gli outlier esclusi, notiamo come ci sia una probabilità di phishing del 100%, per i dati al di fuori dell'upper bound (i quali sono 2509), ciò indica che sia URL molto lunghi che URL con molti caratteri speciali, portano a URL di phishing. Ciò ci porta a mantenere gli outlier e ci da un primo indizio su una possibile correlazione tra queste due variabili.
+Andando a flitrare i dataset solo per gli outlier esclusi, notiamo come ci sia una probabilità di phishing del 100%, per i dati al di fuori dell'upper bound (i quali sono 2509), ciò indica che sia URL molto lunghi che URL con molti caratteri speciali, portano a URL di phishing. Ciò ci porta a mantenere gli outlier e ci da un primo indizio su una **possibile correlazione** tra queste due variabili.
 
 ## Analisi statistica comparativa
 
-In questa sezione viene condotta un'analisi esplorativa comparativa in cui viene diviso il dataset in 2 subdataset, uno contenente solo gli url legittimi ed uno solo gli url di phising. Qui vengono comparati gli indici di centralità e dispersione dei due subdataset per comprendere meglio la distribuzione dei dati nei due casi distinti.
+In questa sezione viene condotta un'analisi esplorativa comparativa, in cui viene diviso il dataset in 2 subdataset, uno contenente solo gli url legittimi ed uno solo gli url di phising. Qui vengono comparati gli indici di centralità e dispersione dei due subdataset per comprendere meglio la distribuzione dei dati nei due casi distinti.
 
 ### Confronto distribuzioni dataset phishing e dataset legittimo
 Per confrontare le distribuzioni, andremo a rappresentare dei barplot per il dataset di phishing e per il dataset legittimo, in modo da capire l'andamento dei dati.
