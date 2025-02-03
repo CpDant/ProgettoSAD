@@ -755,6 +755,21 @@ In conclusione:
 - **Gli URL più lunghi tendono ad essere più di phishing**;
 - **Gli URL con più caratteri speciali sono fortemente associati al phishing**.
 
+
+
+
+
+
+-------CLUSTER-----
+
+
+
+
+
+
+
+
+
 # Analisi dei cluster
 Per effettuare il clustering, dobbiamo innanzitutto scegliere il tipo di clustering che si vuole applicare. Nel nostro caso abbiamo scelto **l'algoritmo non gerarchico K-Means** sulla variabile **URLLength**, per individuare possibili pattern nascosti che non siamo riusciti ad individuare fino ad ora. La scelta è stata presa in base al tipo di dati a disposizione e alle considerazioni fatte in precedenza. Prima di passare all'applicazione del clustering, dobbiamo derivare quale è il k ottimale di cluster da utilizzare per l'algoritmo.
 
@@ -790,6 +805,7 @@ elbow_plot <- ggplot(data.frame(K = 1:10, WCSS = wcss), aes(x = K, y = WCSS)) +
 # Mostrare il grafico
 print(elbow_plot)
 ```
+
 Dal grafico del metodo dell'Elbow, il punto di flessione sembra situarsi intorno a **K = 2 o K = 3**, poiché dopo questi valori la riduzione del **WCSS** diventa meno significativa. Tuttavia, per confermare la scelta ottimale del numero di cluster, vogliamo calcolare il **Silhouette Score**, che ci permetterà di valutare la coesione e la separabilità dei cluster in modo più quantitativo.
 
 ## Metodo della Silhouette
@@ -818,7 +834,13 @@ points(k_values[1], silhouette_scores[1], col = "red", cex = 2, lwd = 2)
 
 Sulla base dei risultati della **silhouette** e del **metodo dell'elbow**, il numero ottimale di cluster è **2**. Poiché entrambi i metodi confermano questa scelta, possiamo procedere con il **k-means con k = 2** per segmentare i dati in due gruppi distinti basati sulla variabile `URLLength`.
 
-## Applicazione del K-means
+
+
+## Consideriamo due differenti scelte iniziali
+
+
+### Applicazione del K-means con ripetizione della procedura di scelta casuale dei punti di riferimento
+
 L'applicazione del k-means è stata fatta, come già spiegato, con **k = 2**, utilizzando come riferimento sia il metodo dell'elbow che il metodo della silhouette. Abbiamo inoltre utilizzato un **nstart = 10**, poiché il k-means dipende dalla scelta casuale dei centroidi iniziali e per mitigare questo problema abbiamo eseguito l'algoritmo 10 volte differenti, prelevando il **minor errore quadratico totale (WCSS)**, tra tutti i risultati ottenuti.
 
 ```{r echo = FALSE, results = 'hide'}
@@ -827,7 +849,7 @@ km<-kmeans(data_cluster, center=2, iter.max=10, nstart=10)
 ```
 
 
-## Analisi della bontà del clustering
+### Analisi della bontà del clustering
 Abbiamo deciso di calcolare alcune **metriche di bontà** per valutare la qualità del clustering ottenuto con K-Means. In particolare, abbiamo analizzato i **centroidi dei cluster**, la **varianza interna ai cluster (WCSS)**, la **separazione tra i cluster (BCSS)** e l'**indice di Calinski-Harabasz**, che confronta i due valori per misurare l'efficacia della suddivisione. 
 
 ```{r echo = FALSE}
@@ -852,7 +874,7 @@ centroid2 <- mean(cluster2)
 size1 <- length(cluster1)
 size2 <- length(cluster2)
   
-  # Calcolo di BCSS come somma pesata delle distanze al quadrato tra i centroidi di ciascun cluster e il centroide globale
+# Calcolo di BCSS come somma pesata delle distanze al quadrato tra i centroidi di ciascun cluster e il centroide globale
 bcss <- size1 * (centroid1 - global_centroid)^2 + size2 * (centroid2 - global_centroid)^2
 
 #Calcolare l'indice di Calinski-Harabasz
@@ -860,38 +882,33 @@ n <- length(data_cluster)
 k <- length(unique(km$cluster))
 ch_index <- (bcss / (k-1)) / (wcss / (n-k))
 
+cluster1 <- data.frame(cluster1)
+cluster2 <- data.frame(cluster2)
 results_table <- data.frame(
   Metriche = c("Centroide Cluster 1", "Centroide Cluster 2", "Centroide Globale", 
-               "WCSS", "BCSS", "Calinski-Harabasz"),
-  Valori = format(c(centroid1, centroid2, global_centroid, 
-             wcss, bcss, ch_index), scientific = FALSE)
+               "WCSS", "BCSS", "Calinski-Harabasz", "numero elementi Cluster 1", "numero elementi Cluster 2"),
+  Valori = format(   c(centroid1, centroid2, global_centroid, 
+             wcss, bcss, ch_index, nrow(cluster1), nrow(cluster2)), scientific = FALSE)
 )
-
 
 #Risultati
 kable(results_table, caption = "Risultati del Clustering")
 
 ```
 
+Dai risultati emerge che i due cluster individuati sono sbilanciati a causa della distribuzione dei dati, con centroidi molto distanti tra loro.
 
-Dai risultati emerge che i due cluster individuati sono ben distinti, con centroidi molto distanti tra loro. 
-La media generale dei dati è vicina al primo centroide, dunque, la maggior parte dei dati appartiene al primo cluster.
-
-Il valore elevato della **BCSS** indica che i cluster sono ben separati, mentre la **WCSS** mostra una certa dispersione interna. L'**indice di Calinski-Harabasz** è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa.  
+Nonostante lo sbilanciamento tra i cluster, l’analisi delle metriche conferma che il clustering è significativo e ben separato, dato che il valore elevato della **BCSS** indica che i cluster sono ben separati, mentre la **WCSS** mostra una certa dispersione interna. L'**indice di Calinski-Harabasz** è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa.  
 
 In conclusione, il clustering risulta essere efficace, con gruppi ben separati e una buona coesione interna.
 
-## Analisi descrittiva dei cluster
+### Analisi descrittiva dei cluster
 Dopo aver valutato la bontà dei cluster, andiamo a determinare in maniera quantitativa, come sono state divise le osservazioni del dataset.
 
 ```{r echo = FALSE}
 
-cluster1 <- data.frame(cluster1)
-cluster2 <- data.frame(cluster2)
 colnames(cluster1) <- "URLLength"
 colnames(cluster2) <- "URLLength"
-
-
 
 stats_cluster_df <- data.frame(
   Clusters = c("Cluster1", "Cluster2"),
@@ -902,10 +919,8 @@ stats_cluster_df <- data.frame(
   Deviazione_Standard = c(sd(cluster1$URLLength), sd(cluster2$URLLength))
 )
 
-
 # Visualizzazione delle tabelle per confronto dati
 kable(stats_cluster_df, caption = "Statistiche descrittive per i due cluster")
-
 
 ```
 I due cluster assumono un significato più importante dopo aver visualizzato gli indici di centralità e di dispersione, infatti avremo che:
@@ -913,10 +928,7 @@ I due cluster assumono un significato più importante dopo aver visualizzato gli
 - **Cluster1**: Questo cluster contiene URL significativamente più lunghi, con un'alta variabilità (deviazione standard elevata). La mediana è inferiore alla media, indicando la presenza di URL estremamente lunghi che alzano la media. Dunque, in questo cluster sono stati raggruppati tutti gli URL più lunghi che sono di phishing, dove sono inclusi anche gli outliers.
 - **Cluster2**: Gli URL in questo cluster sono molto più corti e hanno una distribuzione più compatta, con una bassa variabilità. La media e la mediana sono vicine, segnalando una distribuzione più simmetrica rispetto al Cluster 1. Il Cluster 2 rappresenta dunque URL più corti, che potrebbero essere più tipici di siti legittimi.
 
-Dalle analisi precedenti potremmo affermare che Cluster1, conterrà solo siti di phishing e Cluster2 conterrà tutti i siti legittimi, con una piccola parte di siti di phishing.
-Quindi la divisione rispetta più o meno le caratteristiche che sono state derivate nelle analisi precedenti.
-
-## Grafici per confronto cluster
+### Grafici per confronto cluster
 Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una visione più diretta ed esplicativa della differenza tra i due cluster.
 
 ```{r echo = FALSE}
@@ -943,7 +955,191 @@ ggplot(dataset, aes(x = Cluster, y = URLLength, fill = Cluster)) +
 
 ```
 
-In questi due grafici, si nota ancora di più la netta distinzione che c'è tra i due cluster, dove il Cluster2 ha url più corti, mentre il Cluster1 ha url molto più lunghi. Inoltre la concentrazione dei dati è diversa, poiché nel primo cluster sono presenti outliers più grandi e che quindi creano più dispersione dei dati.
+In questi due grafici, si nota ancora di più la netta distinzione che c'è tra i due cluster, dove il Cluster2 ha url più corti, mentre il Cluster1 ha url molto più lunghi.
+
+
+
+
+
+----RIPETIZIONE DELLA PROCEDURA DI SCELTA CASUALE
+
+
+
+
+
+## Applicazione del K-means con scelta dei centroidi usando metodo gerarchico
+
+Anche in questo caso utilizziamo **k = 2**, utilizzando come riferimento sia il metodo dell'elbow che il metodo della silhouette. Qui abbiamo utilizzato un **approccio gerarchico** per ottenere i centroidi iniziali, applicando un clustering gerarchico e utilizzando i centroidi dei cluster risultanti come punti di partenza per il **K-Means**. Questo metodo permette di selezionare i centroidi in modo più mirato, migliorando la stabilità del clustering e riducendo la dipendenza dalla scelta casuale iniziale.
+
+```{r echo = FALSE}
+d<-dist(data_cluster, method="euclidean", diag=TRUE, upper=TRUE)
+d2<-d^2
+
+tree<-hclust(d2, method="centroid")
+taglio<-cutree(tree, k=2, h=NULL)
+tagliolist<-list(taglio)
+centroidiIniziali<-aggregate(dataset$URLLength, tagliolist, mean) [,-1]
+centroidiIniziali #visualizza i centroidi iniziali
+
+#K-means con k = 2
+km2<-kmeans(data_cluster, centers=centroidiIniziali, nstart=1)
+```
+
+## Analisi della bontà  del clustering
+Abbiamo deciso di calcolare alcune **metriche di bontà** per valutare la qualità del clustering ottenuto con K-Means. In particolare, abbiamo analizzato i **centroidi dei cluster**, la **varianza interna ai cluster (WCSS)**, la **separazione tra i cluster (BCSS)** e l'**indice di Calinski-Harabasz**, che confronta i due valori per misurare l'efficacia della suddivisione. 
+
+
+```{r echo = FALSE}
+#centroidi del cluster
+centroids2 <- km2$centers
+centroids2
+
+#Calcolare WCSS 
+wcss <- sum(km2$withinss)
+
+#Calcolare BCSS
+global_centroid <- mean(data_cluster)
+
+# Identificare i due cluster
+cluster1 <- data_cluster[km2$cluster == 1]
+cluster2 <- data_cluster[km2$cluster == 2]
+
+# Centroide di ciascun cluster
+centroid1 <- mean(cluster1)
+centroid2 <- mean(cluster2)
+
+# Numero di punti per ciascun cluster
+size1 <- length(cluster1)
+size2 <- length(cluster2)
+  
+  # Calcolo di BCSS come somma pesata delle distanze al quadrato tra i centroidi di ciascun cluster e il centroide globale
+bcss <- size1 * (centroid1 - global_centroid)^2 + size2 * (centroid2 - global_centroid)^2
+
+#Calcolare l'indice di Calinski-Harabasz
+n <- length(data_cluster)
+k <- length(unique(km$cluster))
+ch_index <- (bcss / (k-1)) / (wcss / (n-k))
+
+cluster1 <- data.frame(cluster1)
+cluster2 <- data.frame(cluster2)
+results_table <- data.frame(
+  Metriche = c("Centroide Cluster 1", "Centroide Cluster 2", "Centroide Globale", 
+               "WCSS", "BCSS", "Calinski-Harabasz", "numero elementi Cluster 1", "numero elementi Cluster 2"),
+  Valori = format(   c(centroid1, centroid2, global_centroid, 
+             wcss, bcss, ch_index, nrow(cluster1), nrow(cluster2)), scientific = FALSE)
+)
+
+#Risultati
+kable(results_table, caption = "Risultati del Clustering")
+
+```
+ 
+Anche in questo caso dai risultati emerge che i due cluster individuati sono sbilanciati a causa della distribuzione dei dati, con centroidi molto distanti tra loro.
+
+Nonostante lo sbilanciamento tra i cluster, l’analisi delle metriche conferma che il clustering è significativo e ben separato, dato che il valore elevato della **BCSS** indica che i cluster sono ben separati, mentre la **WCSS** mostra una certa dispersione interna. L'**indice di Calinski-Harabasz** è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa. 
+
+Le metriche indicano che i cluster sono ben separati dato dal valore elevato della BCSS, ma c'è ancora dispersione interna come mostra la WCSS. L’indice di Calinski-Harabasz conferma una buona qualità del clustering, anche se leggermente inferiore alla precedente esecuzione.
+
+
+### Analisi descrittiva dei cluster
+Dopo aver valutato la qualità del clustering, analizziamo in modo quantitativo come le osservazioni del dataset sono state suddivise tra i cluster.
+
+```{r echo = FALSE}
+# Calcolo delle statistiche per ogni variabile della RQ1
+
+cluster1 <- data.frame(cluster1)
+cluster2 <- data.frame(cluster2)
+colnames(cluster1) <- "URLLength"
+colnames(cluster2) <- "URLLength"
+
+stats_cluster_df <- data.frame(
+  Clusters = c("Cluster1", "Cluster2"),
+  Minimo = c(min(cluster1$URLLength), min(cluster2$URLLength)),
+  Massimo = c(max(cluster1$URLLength), max(cluster2$URLLength)),
+  Media = c(mean(cluster1$URLLength), mean(cluster2$URLLength)),
+  Mediana = c(median(cluster1$URLLength), median(cluster2$URLLength)),
+  Deviazione_Standard = c(sd(cluster1$URLLength), sd(cluster2$URLLength))
+)
+
+# Visualizzazione delle tabelle per confronto dati
+kable(stats_cluster_df, caption = "Statistiche descrittive per i due cluster")
+
+
+```
+
+L'analisi delle statistiche descrittive mostra una chiara distinzione tra i due cluster. Il Cluster 1 raccoglie gli URL più lunghi. Gli URL in questo gruppo variano tra 158 e 1769 caratteri, con una mediana di 232, indicando una distribuzione molto ampia.
+
+Il Cluster 2, invece, rappresenta gli URL più corti e omogenei, con una media di 32 caratteri e una deviazione standard molto più bassa. La lunghezza degli URL in questo gruppo varia tra 14 e 157 caratteri, con una mediana di 28, segnalando una distribuzione più compatta.
+
+Questi risultati confermano che il clustering ha separato efficacemente gli URL lunghi da quelli più corti, con il Cluster 1 caratterizzato da una maggiore dispersione e il Cluster 2 da una struttura più uniforme.
+
+### Grafici per confronto cluster
+Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una visione più diretta ed esplicativa della differenza tra i due cluster.
+
+```{r echo = FALSE}
+#Salvataggio di Cluster nel data frame
+dataset$Cluster <- as.factor(km$cluster)
+
+#Plot per i cluster
+ggplot(dataset, aes(x = Cluster, y = URLLength, color = Cluster)) +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.7) +
+  labs(title = "Distribuzione dei dati di URLLength per Cluster",
+       x = "Cluster",
+       y = "Lunghezza URL") +
+  theme_minimal()
+
+#Boxplot per i cluster
+
+
+ggplot(dataset, aes(x = Cluster, y = URLLength, fill = Cluster)) +
+  geom_boxplot() +
+  labs(
+       x = "Cluster",
+       y = "Lunghezza URL") +
+  theme_minimal()
+
+```
+
+Questi due grafici evidenziano ancora meglio la chiara separazione tra i due cluster: il **Cluster 2** comprende URL più brevi, mentre il **Cluster 1** contiene URL significativamente più lunghi.
+
+
+## k-means++
+
+//aggiungere il resto delle analisi per il k-mans++
+
+```{r}
+X <- as.matrix(dataset$URLLength)
+# Eseguire il K-Means++ con k=2
+set.seed(42)  # Per risultati riproducibili
+km_result <- KMeans_rcpp(X, clusters = 2, num_init = 5, initializer = 'kmeans++')
+
+# Stampare i centroidi trovati
+cat("Centroidi finali:\n")
+print(km_result$centroids)
+
+# Numero di elementi per cluster
+cat("Numero di elementi per cluster:\n")
+print(table(km_result$clusters))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Caricamento e pulizia dataset generato da ChatGPT
 Qui applicheremo gli stessi processi iniziali applicati sul dataset principale, per capire se il dataset ha generato in maniera corretta e significativa i dati.
