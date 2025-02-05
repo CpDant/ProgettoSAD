@@ -67,6 +67,7 @@ library(ggplot2)
 library(cluster)
 library(ClusterR)
 library(knitr)
+library(patchwork)
 
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
@@ -632,6 +633,7 @@ Qui notiamo che il numero di sottodomini non sembra un forte predittore di phish
 
 Da ciò si evince che un numero elevato di caratteri speciali nell’URL è un forte indicatore di phishing, poiché gli URL fraudolenti tendono ad avere più simboli rispetto ai siti legittimi.
 
+\newpage
 # Statistica descrittiva bivariata
 
 ## Matrice di correlazione
@@ -769,9 +771,13 @@ In conclusione:
 
 
 
-
+\newpage
 # Analisi dei cluster
-Per effettuare il clustering, dobbiamo innanzitutto scegliere il tipo di clustering che si vuole applicare. Nel nostro caso abbiamo scelto **l'algoritmo non gerarchico K-Means** sulla variabile **URLLength**, per individuare possibili pattern nascosti che non siamo riusciti ad individuare fino ad ora. La scelta è stata presa in base al tipo di dati a disposizione e alle considerazioni fatte in precedenza. Prima di passare all'applicazione del clustering, dobbiamo derivare quale è il k ottimale di cluster da utilizzare per l'algoritmo.
+Per effettuare il clustering, dobbiamo innanzitutto scegliere il tipo di clustering che si vuole applicare. Nel nostro caso abbiamo scelto **l'algoritmo non gerarchico K-Means**. 
+
+Dalle analisi precedenti, è stata individuata **URLLength** come variabile che influenza molto la probabilità che un URL sia di phishing oppure legittimo, dunque utilizzeremo questa variabile per il clustering, poiché risulta essere la più significativa. Ciò ci servirà per individuare possibili pattern nascosti che non siamo riusciti ad individuare fino ad ora e dare ancora più importanza alle nostre ipotesi, derivate dalle analisi passate.
+
+Prima di passare all'applicazione del clustering, dobbiamo derivare quale è il k ottimale di cluster da utilizzare per l'algoritmo.
 
 ## Metodo dell'Elbow
 
@@ -836,10 +842,7 @@ Sulla base dei risultati della **silhouette** e del **metodo dell'elbow**, il nu
 
 
 
-## Consideriamo due differenti scelte iniziali
-
-
-### Applicazione del K-means con ripetizione della procedura di scelta casuale dei punti di riferimento
+## Applicazione del K-means con ripetizione della procedura di scelta casuale dei punti di riferimento
 
 L'applicazione del k-means è stata fatta, come già spiegato, con **k = 2**, utilizzando come riferimento sia il metodo dell'elbow che il metodo della silhouette. Abbiamo inoltre utilizzato un **nstart = 10**, poiché il k-means dipende dalla scelta casuale dei centroidi iniziali e per mitigare questo problema abbiamo eseguito l'algoritmo 10 volte differenti, prelevando il **minor errore quadratico totale (WCSS)**, tra tutti i risultati ottenuti.
 
@@ -935,8 +938,9 @@ Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una vision
 #Salvataggio di Cluster nel data frame
 dataset$Cluster <- as.factor(km$cluster)
 
+
 #Plot per i cluster
-ggplot(dataset, aes(x = Cluster, y = URLLength, color = Cluster)) +
+plot1 <- ggplot(dataset, aes(x = Cluster, y = URLLength, color = Cluster)) +
   geom_jitter(width = 0.2, size = 2, alpha = 0.7) +
   labs(title = "Distribuzione dei dati di URLLength per Cluster",
        x = "Cluster",
@@ -946,12 +950,14 @@ ggplot(dataset, aes(x = Cluster, y = URLLength, color = Cluster)) +
 #Boxplot per i cluster
 
 
-ggplot(dataset, aes(x = Cluster, y = URLLength, fill = Cluster)) +
+plot2 <- ggplot(dataset, aes(x = Cluster, y = URLLength, fill = Cluster)) +
   geom_boxplot() +
   labs(
        x = "Cluster",
        y = "Lunghezza URL") +
   theme_minimal()
+
+plot1 + plot2
 
 ```
 
@@ -992,7 +998,6 @@ Abbiamo deciso di calcolare alcune **metriche di bontà** per valutare la qualit
 ```{r echo = FALSE}
 #centroidi del cluster
 centroids2 <- km2$centers
-centroids2
 
 #Calcolare WCSS 
 wcss <- sum(km2$withinss)
@@ -1080,8 +1085,9 @@ Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una vision
 #Salvataggio di Cluster nel data frame
 dataset$Cluster <- as.factor(km$cluster)
 
+
 #Plot per i cluster
-ggplot(dataset, aes(x = Cluster, y = URLLength, color = Cluster)) +
+plot1 <- ggplot(dataset, aes(x = Cluster, y = URLLength, color = Cluster)) +
   geom_jitter(width = 0.2, size = 2, alpha = 0.7) +
   labs(title = "Distribuzione dei dati di URLLength per Cluster",
        x = "Cluster",
@@ -1089,62 +1095,25 @@ ggplot(dataset, aes(x = Cluster, y = URLLength, color = Cluster)) +
   theme_minimal()
 
 #Boxplot per i cluster
-
-
-ggplot(dataset, aes(x = Cluster, y = URLLength, fill = Cluster)) +
+plot2 <- ggplot(dataset, aes(x = Cluster, y = URLLength, fill = Cluster)) +
   geom_boxplot() +
   labs(
        x = "Cluster",
        y = "Lunghezza URL") +
   theme_minimal()
 
+plot1 + plot2
+
 ```
 
 Questi due grafici evidenziano ancora meglio la chiara separazione tra i due cluster: il **Cluster 2** comprende URL più brevi, mentre il **Cluster 1** contiene URL significativamente più lunghi.
-
-
-## k-means++
-
-//aggiungere il resto delle analisi per il k-mans++
-
-```{r}
-X <- as.matrix(dataset$URLLength)
-# Eseguire il K-Means++ con k=2
-set.seed(42)  # Per risultati riproducibili
-km_result <- KMeans_rcpp(X, clusters = 2, num_init = 5, initializer = 'kmeans++')
-
-# Stampare i centroidi trovati
-cat("Centroidi finali:\n")
-print(km_result$centroids)
-
-# Numero di elementi per cluster
-cat("Numero di elementi per cluster:\n")
-print(table(km_result$clusters))
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 ## Caricamento e pulizia dataset generato da ChatGPT
 Qui applicheremo gli stessi processi iniziali applicati sul dataset principale, per capire se il dataset ha generato in maniera corretta e significativa i dati.
 
-```{r}
+```{r echo = FALSE}
 LLM_dataset <- read.csv("Dataset_Phishing_ChatGPT.csv", sep = ",", header = TRUE)
 
 ```
@@ -1333,8 +1302,9 @@ Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una vision
 #Salvataggio di Cluster nel data frame
 LLM_dataset$Cluster_LLM <- as.factor(km_LLM$cluster)
 
+
 #Plot per i cluster
-ggplot(LLM_dataset, aes(x = Cluster_LLM, y = URLLength, color = Cluster_LLM)) +
+plot1 <- ggplot(LLM_dataset, aes(x = Cluster_LLM, y = URLLength, color = Cluster_LLM)) +
   geom_jitter(width = 0.2, size = 2, alpha = 0.7) +
   labs(title = "Distribuzione dei dati di URLLength per Cluster",
        x = "Cluster_LLM",
@@ -1342,15 +1312,31 @@ ggplot(LLM_dataset, aes(x = Cluster_LLM, y = URLLength, color = Cluster_LLM)) +
   theme_minimal()
 
 #Boxplot per i cluster
-ggplot(LLM_dataset, aes(x = Cluster_LLM, y = URLLength, fill = Cluster_LLM)) +
+plot2 <- ggplot(LLM_dataset, aes(x = Cluster_LLM, y = URLLength, fill = Cluster_LLM)) +
   geom_boxplot() +
   labs(
        x = "Cluster_LLM",
        y = "Lunghezza URL") +
   theme_minimal()
 
+plot1 + plot2
+
+frequenze_assolute_url_LLM <- table(LLM_dataset$URLLength)
+barplot(
+  frequenze_assolute_url_LLM,
+  main = "Frequenze assoluta URLLength_LLM",
+  xlab = "URLLength",
+  ylab = "Frequenze Assolute",
+  col = "lightblue",
+  border = "black"
+)
+
+
+
 ```
+
 Andiamo ad analizzare nel dettaglio il grafico:
+
 - Il Cluster 1 contiene URL relativamente corti, con lunghezze ben distribuite tra 0 e circa 50.
 - Il Cluster 2 (azzurro) contiene URL significativamente più lunghi, con una distribuzione che si estende ben oltre 100 caratteri e una maggiore dispersione.
 - I valori sono più contenuti, dunque, la dispersione è minore rispetto al dataset originale.
@@ -1364,13 +1350,77 @@ Confrontando il clustering applicato sul dataset originale, rispetto a quello ap
 - Nel dataset reale, il cluster 2 mostra una **variabilità molto più ampia**, con outlier che superano i 1000 caratteri.
 - I dati generati da ChatGPT sembrano sottostimare la lunghezza estrema degli URL, mancando gli outlier evidenti nel dataset reale. Infatti il clustering nei dati generati risulta essere più regolare e meno rumoroso rispetto alla realtà.
 
-
 Il dataset generato da ChatGPT semplifica la distribuzione della lunghezza degli URL, evitando la presenza di valori estremi che invece si trovano nel dataset reale. Questo potrebbe influenzare l’accuratezza di modelli basati su questi dati, specialmente se i pattern delle lunghezze degli URL sono critici per distinguere siti legittimi da siti di phishing.
 
+Inoltre, visualizzando la distribuzione dei dati generati da chatGPT notiamo che, vengono generati dati che non rispettano quello che è l'andamento reale dei dati, poiché abbiamo una maggiore frequenza di un singolo valore (14), e poi il resto dei dati si assesta su valori simili. Ciò è dovuto dal fatto che ChatGPT cerca di introdurre e riempire i dati in maniera automatica e quindi nella maggior parte dei casi sceglie di inserire un valore comune, poiché è più veloce e semplice.
 
+\newpage
+# Inferenza Statistica
 
+## Test Chi-Quadrato su URLLength
+Abbiamo visto che, la variabile URLLength ha una forte asimmetria positiva e, con varie analisi, abbiamo individuato che gli URL lunghi sono più frequentemente associati a siti di phishing. 
 
+Per verificare la nostra ipotesi, dobbiamo utilizzare **l'inferenza statistica**, che ci consente di andare a capire se le statistiche derivate dal nostro campione, possono essere applicate per la popolazione intera, che, nel nostro caso, è infinita.
 
+Utilizzeremo il test del chi-quadrato che verifica l'associazione tra due variabili categoriali che sono:
+
+- **URLLenght_Cat**: Variabile URLLength suddivisa in due categorie, URL lunghi e URL corti. Il valore che discriminerà le due categorie sarà il limite superiore calcolato nel metodo dell'IQR.
+- **label**: Variabile categoriale che distingue URL legittimi, da URL di phishing.
+
+Definiamo le nostre due ipotesi, dove $H_0$ sarà l'ipotesi nulla e $H_1$ l'ipotesi alternativa:
+
+-**$H_0$**: La lunghezza dell'URL e la probabilità di phishing sono indipendenti;
+-**$H_1$**: C'è un'associazione significativa tra URL lunghi e phishing.
+
+Se il **p-value < 0.05**, rifiutiamo $H_0$ e concludiamo che gli URL lunghi sono significativamente più associati a siti di phishing.
+
+```{r echo = FALSE}
+#Test Chi-Quadrato
+dataset$URLLength_Cat <- ifelse(dataset$URLLength > upper_bound_URL, "Lungo", "Corto")
+chisq.test(table(dataset$URLLength_Cat, dataset$label))
+
+#Tabella per risultati
+chi_sq_result <- data.frame(
+  Metrica = c("X-squared", "Gradi di Libertà", "p-value"),
+  Valore = c(3710.6, 1, "< 2.2e-16")
+)
+
+kable(chi_sq_result, caption = "Risultati test Chi-Quadrato")
+
+```
+
+I risultati del test mostrano come Il valore **$X^2$** è molto alto, indicando una forte deviazione dall’indipendenza e Il **p-value < 2.2e-16 è estremamente piccolo**, quindi possiamo rifiutare l’ipotesi nulla e concludere che esiste una relazione significativa tra la lunghezza degli URL e il fatto che siano di phishing.
+
+## Test Chi-Quadrato su NoOfOtherSpecialCharsInURL
+
+Anche in questo caso, utilizzeremo il test del chi-quadrato che verifica l'associazione tra due variabili categoriali che sono:
+
+- **NoOfOtherSpecialCharsInURL_Cat**: Variabile NoOfOtherSpecialCharsInURL suddivisa in due categorie, NoOfOtherSpecialCharsInURL > 6 NoOfOtherSpecialCharsInURL <= 6. Il valore che discriminerà le due categorie sarà il limite superiore calcolato nel metodo dell'IQR.
+- **label**: Variabile categoriale che distingue URL legittimi, da URL di phishing.
+
+Definiamo le nostre due ipotesi, dove $H_0$ sarà l'ipotesi nulla e $H_1$ l'ipotesi alternativa:
+
+-**$H_0$**: Il numero di altri caratteri speciali in un URL e la probabilità di phishing sono indipendenti;
+-**$H_1$**: C'è un'associazione significativa tra il numero di altri caratteri speciali in un URL e phishing.
+
+Se il **p-value < 0.05**, rifiutiamo $H_0$ e concludiamo che gli URL con una frequenza elevata di altri caratteri speciali sono significativamente più associati a phishing.
+
+```{r echo = FALSE}
+#Test Chi-Quadrato
+dataset$NoOfOtherSpecialCharsInURL_Cat <- ifelse(dataset$NoOfOtherSpecialCharsInURL > upper_bound_special_chars, "Caratteri > 6", "Caratteri <= 6")
+chisq.test(table(dataset$NoOfOtherSpecialCharsInURL_Cat, dataset$label))
+
+#Tabella per risultati
+chi_sq_result <- data.frame(
+  Metrica = c("X-squared", "Gradi di Libertà", "p-value"),
+  Valore = c(1812.6, 1, "< 2.2e-16")
+)
+
+kable(chi_sq_result, caption = "Risultati test Chi-Quadrato")
+
+```
+
+Anche in questo caso, i risultati del test mostrano come Il valore **$X^2$** è molto alto, indicando una forte deviazione dall’indipendenza e Il **p-value < 2.2e-16 è estremamente piccolo**, quindi possiamo rifiutare l’ipotesi nulla e concludere che esiste una relazione estremamente significativa tra la frequenza elevata di altri caratteri speciali e il phishing.
 
 # Conclusioni
 
