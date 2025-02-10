@@ -634,7 +634,7 @@ Qui notiamo che il numero di sottodomini non sembra un forte predittore di phish
 Da ciò si evince che un numero elevato di caratteri speciali nell’URL è un forte indicatore di phishing, poiché gli URL fraudolenti tendono ad avere più simboli rispetto ai siti legittimi.
 
 \newpage
-# Statistica descrittiva bivariata
+# Statistica descrittiva multivariata
 
 ## Matrice di correlazione
 
@@ -645,7 +645,7 @@ La correlazione è una misura statistica che descrive la relazione tra due varia
 subset_dataset <- dataset[, c("URLLength", "NoOfSubDomain", "NoOfOtherSpecialCharsInURL")]
 
 # Matrice di correlazione
-corrplot(cor(subset_dataset))
+corrplot(cor(subset_dataset), type = "lower")
 
 ```
 
@@ -666,7 +666,7 @@ ggplot(dataset, aes(x = URLLength, y = NoOfOtherSpecialCharsInURL)) +
 
 ```
 
-La linea di regressione rossa suggerisce una forte relazione positiva, indicando che all'aumentare della lunghezza dell'URL aumenta anche il numero di caratteri speciali. Questo suggerisce che gli URL più lunghi tendono a contenere più caratteri speciali, una caratteristica comune negli attacchi di phishing, in cui i truffatori usano URL complessi per mascherare l'indirizzo reale.
+La linea di regressione rossa suggerisce una forte relazione positiva, indicando che all'aumentare della lunghezza dell'URL aumenta anche il numero di caratteri speciali. Questo suggerisce che gli URL più lunghi tendono a contenere più caratteri speciali, una caratteristica comune negli attacchi di phishing, in cui i truffatori usano URL complessi per mascherare l'indirizzo reale. //Aggiungere altre variabili per vedere se aumenta la bontà di adattamento
 
 ### Coefficiente di determinazione
 
@@ -684,89 +684,6 @@ print(paste("Coefficiente di Determinazione (R^2):", round(r_squared, 4)))
 Esso sarà $R^2$ = 0.6222, ciò significa che il 62.22% della variabilità nel numero di caratteri speciali può essere spiegata dalla lunghezza dell'URL. Non è un modello perfetto, ma mostra una correlazione moderatamente forte: c'è una tendenza chiara, anche se non tutti i punti seguono perfettamente la retta di regressione.
 
 Si può concludere che la lunghezza dell’URL è un buon indicatore, ma non è l’unico fattore che determina il numero di caratteri speciali negli URL.
-
-## Modello di regressione logistica
-Dopo aver derivato le variabili più importanti e aver determinato che tra di esse esiste una correlazione positiva. Andiamo a verificare se e come **URLLength** e **NoOfOtherSpecialCharsInURL** influenzano **label**. Per fare ciò utilizzeremo un modello di regressione logistico poiché la variabile sotto analisi è una variabile binaria, sulla quale non si può applicare regressione lineare.
-
-```{r echo = FALSE, results = 'hide', warning = FALSE}
-modello_logistico <- glm(label ~ URLLength + NoOfOtherSpecialCharsInURL, 
-                      data = dataset, family = binomial)
-
-# Risultati del modello
-summary(modello_logistico)
-
-# Calcolo dell'odds ratio per interpretare meglio il modello
-exp(coef(modello_logistico))
-
-
-
-```
-
-
-```{r echo = FALSE}
-# Creazione della tabella con i risultati della regressione logistica
-logistic_results <- data.frame(
-  Parametro = c("Intercept", "URLLength", "NoOfOtherSpecialCharsInURL"),
-  Coefficiente = c(3.307561, -0.011499, -1.437189),
-  Errore_Standard = c(0.066831, 0.002612, 0.025278),
-  Z_value = c(49.492, -4.403, -56.855),
-  P_value = c("< 2e-16", "1.07e-05", "< 2e-16"),
-  Odds_Ratio = c(27.3184202, 0.9885664, 0.2375946)
-)
-
-# Visualizzazione tabella per risultati regressione logistica
-kable(logistic_results, 
-      caption = "Risultati della regressione logistica",
-      col.names = c("Parametro", "$β$ (Coefficiente)", "Errore Standard", "Z-value", "P-value", "Odds Ratio"))
-```
-
-La tabella mostra i risultati della regressione logistica per la classificazione di phishing (0) vs legittimo (1) in base a URLLength e NoOfOtherSpecialCharsInURL. Ecco il significato di ogni colonna:
-
-1. **Parametro**
-\begin{itemize}
-\item \textbf{Intercept}: Costante del modello;
-\item \textbf{URLLength}: Lunghezza dell’URL;
-\item \textbf{NoOfOtherSpecialCharsInURL}: Numero di caratteri speciali nell’URL.
-\end{itemize}
-
-
-2. **Coefficiente ($β$)**: Indica quanto la variabile influenza la probabilità che l’URL sia legittimo (label = 1). Vediamo nel dettaglio i dati:
-\begin{itemize}
-\item \textbf{Intercept}: Se un URL avesse lunghezza 0 e nessun carattere speciale, sarebbe molto probabile che sia legittimo;
-\item \textbf{URLLength}: Un aumento della lunghezza dell'URL riduce la probabilità che l'URL sia legittimo;
-\item \textbf{NoOfOtherSpecialCharsInURL}: Un aumento di 1 carattere nella lunghezza dell'URL aumenta la probabilità di phishing di circa il 1.14%.
-\end{itemize}
-
-3. **Errore Standard**: Indica la variabilità del coefficiente stimato. Valori piccoli suggeriscono che la stima è precisa.
-
-4. **Z-value**: Indica quanto è distante il coefficiente da 0, in termini di deviazioni standard. Valori molto alti (in valore assoluto) indicano che il coefficiente è molto significativo.
-
-
-5. **P-value**: Indica quanto è probabile che il coefficiente sia diverso da 0 per puro caso. Se p < 0.05, la variabile è statisticamente significativa. Qui, tutte le variabili hanno **p-value < 0.001**, quindi hanno un impatto significativo.
-
-
-6. **Odds Ratio ($e^β$)**: Rappresenta quanto cambia la probabilità di essere legittimo quando la variabile aumenta di 1 unità. Vediamo nel dettaglio i dati:
-\begin{itemize}
-\item \textbf{Intercept}: Un URL senza caratteri speciali e con lunghezza zero è molto probabile che sia legittimo.
-\item \textbf{URLLength}: Un URL più lungo riduce la probabilità di essere legittimo di circa 1.14%
-\item \textbf{NoOfOtherSpecialCharsInURL}: Aggiungere un carattere speciale riduce del 76% la probabilità di essere legittimo (quindi aumenta di molto la probabilità di phishing).
-\end{itemize}
-
-In conclusione:
-
-- **Gli URL più lunghi tendono ad essere più di phishing**;
-- **Gli URL con più caratteri speciali sono fortemente associati al phishing**.
-
-
-
-
-
-
--------CLUSTER-----
-
-
-
-
 
 
 
@@ -839,8 +756,6 @@ points(k_values[1], silhouette_scores[1], col = "red", cex = 2, lwd = 2)
 ```
 
 Sulla base dei risultati della **silhouette** e del **metodo dell'elbow**, il numero ottimale di cluster è **2**. Poiché entrambi i metodi confermano questa scelta, possiamo procedere con il **k-means con k = 2** per segmentare i dati in due gruppi distinti basati sulla variabile `URLLength`.
-
-
 
 ## Applicazione del K-means con ripetizione della procedura di scelta casuale dei punti di riferimento
 
@@ -962,16 +877,6 @@ plot1 + plot2
 ```
 
 In questi due grafici, si nota ancora di più la netta distinzione che c'è tra i due cluster, dove il Cluster2 ha url più corti, mentre il Cluster1 ha url molto più lunghi.
-
-
-
-
-
-----RIPETIZIONE DELLA PROCEDURA DI SCELTA CASUALE
-
-
-
-
 
 ## Applicazione del K-means con scelta dei centroidi usando metodo gerarchico
 
@@ -1352,12 +1257,110 @@ Confrontando il clustering applicato sul dataset originale, rispetto a quello ap
 
 Il dataset generato da ChatGPT semplifica la distribuzione della lunghezza degli URL, evitando la presenza di valori estremi che invece si trovano nel dataset reale. Questo potrebbe influenzare l’accuratezza di modelli basati su questi dati, specialmente se i pattern delle lunghezze degli URL sono critici per distinguere siti legittimi da siti di phishing.
 
-Inoltre, visualizzando la distribuzione dei dati generati da chatGPT notiamo che, vengono generati dati che non rispettano quello che è l'andamento reale dei dati, poiché abbiamo una maggiore frequenza di un singolo valore (14), e poi il resto dei dati si assesta su valori simili. Ciò è dovuto dal fatto che ChatGPT cerca di introdurre e riempire i dati in maniera automatica e quindi nella maggior parte dei casi sceglie di inserire un valore comune, poiché è più veloce e semplice.
+Inoltre, visualizzando la distribuzione dei dati generati da ChatGPT notiamo che, vengono generati dati che non rispettano quello che è l'andamento reale dei dati, poiché abbiamo una maggiore frequenza di un singolo valore (14), e poi il resto dei dati si assesta su valori simili. Ciò è dovuto dal fatto che ChatGPT cerca di introdurre e riempire i dati in maniera automatica e quindi nella maggior parte dei casi sceglie di inserire un valore comune, poiché è più veloce e semplice.
 
 \newpage
 # Inferenza Statistica
 
-## Test Chi-Quadrato su URLLength
+## Stima dei parametri
+
+### Stima puntuale
+
+```{r}
+
+
+```
+
+
+## Verifica delle ipotesi
+
+### Regressione logistica
+
+Andiamo a verificare se e come **URLLength** e **NoOfOtherSpecialCharsInURL** influenzano **label**. Per fare ciò utilizzeremo un modello di regressione logistico poiché la variabile sotto analisi è una variabile binaria, sulla quale non si può applicare regressione lineare.
+
+```{r echo = FALSE, results = 'hide', warning = FALSE}
+modello_logistico <- glm(label ~ URLLength + NoOfOtherSpecialCharsInURL, 
+                      data = dataset, family = binomial)
+
+# Risultati del modello
+summary(modello_logistico)
+
+# Calcolo dell'odds ratio per interpretare meglio il modello
+exp(coef(modello_logistico))
+
+
+```
+
+
+```{r echo = FALSE}
+# Creazione della tabella con i risultati della regressione logistica
+logistic_results <- data.frame(
+  Parametro = c("Intercept", "URLLength", "NoOfOtherSpecialCharsInURL"),
+  Coefficiente = c(3.307561, -0.011499, -1.437189),
+  Errore_Standard = c(0.066831, 0.002612, 0.025278),
+  Z_value = c(49.492, -4.403, -56.855),
+  P_value = c("< 2e-16", "1.07e-05", "< 2e-16"),
+  Odds_Ratio = c(27.3184202, 0.9885664, 0.2375946)
+)
+
+# Visualizzazione tabella per risultati regressione logistica
+kable(logistic_results, 
+      caption = "Risultati della regressione logistica",
+      col.names = c("Parametro", "$β$ (Coefficiente)", "Errore Standard", "Z-value", "P-value", "Odds Ratio"))
+```
+
+La tabella mostra i risultati della regressione logistica per la classificazione di phishing (0) vs legittimo (1) in base a URLLength e NoOfOtherSpecialCharsInURL. Ecco il significato di ogni colonna:
+
+1. **Parametro**
+\begin{itemize}
+\item \textbf{Intercept}: Costante del modello;
+\item \textbf{URLLength}: Lunghezza dell’URL;
+\item \textbf{NoOfOtherSpecialCharsInURL}: Numero di caratteri speciali nell’URL.
+\end{itemize}
+
+
+2. **Coefficiente ($β$)**: Indica quanto la variabile influenza la probabilità che l’URL sia legittimo (label = 1). Vediamo nel dettaglio i dati:
+\begin{itemize}
+\item \textbf{Intercept}: Se un URL avesse lunghezza 0 e nessun carattere speciale, sarebbe molto probabile che sia legittimo;
+\item \textbf{URLLength}: Un aumento della lunghezza dell'URL riduce la probabilità che l'URL sia legittimo;
+\item \textbf{NoOfOtherSpecialCharsInURL}: Un aumento di 1 carattere nella lunghezza dell'URL aumenta la probabilità di phishing di circa il 1.14%.
+\end{itemize}
+
+3. **Errore Standard**: Indica la variabilità del coefficiente stimato. Valori piccoli suggeriscono che la stima è precisa.
+
+4. **Z-value**: Indica quanto è distante il coefficiente da 0, in termini di deviazioni standard. Valori molto alti (in valore assoluto) indicano che il coefficiente è molto significativo.
+
+
+5. **P-value**: Indica quanto è probabile che il coefficiente sia diverso da 0 per puro caso. Se p < 0.05, la variabile è statisticamente significativa a livello alpha fissato pari a 0.05. Qui, tutte le variabili hanno **p-value < 0.001**, quindi hanno un impatto significativo.
+
+
+6. **Odds Ratio ($e^β$)**: Rappresenta quanto cambia la probabilità di essere legittimo quando la variabile aumenta di 1 unità. Vediamo nel dettaglio i dati:
+\begin{itemize}
+\item \textbf{Intercept}: Un URL senza caratteri speciali e con lunghezza zero è molto probabile che sia legittimo.
+\item \textbf{URLLength}: Un URL più lungo riduce la probabilità di essere legittimo di circa 1.14\%
+\item \textbf{NoOfOtherSpecialCharsInURL}: Aggiungere un carattere speciale riduce del 76\% la probabilità di essere legittimo (quindi aumenta di molto la probabilità di phishing).
+\end{itemize}
+
+In conclusione:
+
+- **Gli URL più lunghi tendono ad essere più di phishing**;
+- **Gli URL con più caratteri speciali sono fortemente associati al phishing**.
+
+Andiamo a testare il nostro modello, con la creazione di un dataframe che simula un sito con un URL lungo 100 caratteri e che contiene 5 altri caratteri speciali non comuni.
+
+```{r}
+# Sito di prova
+nuovo_sito <- data.frame(URLLength = 100, NoOfOtherSpecialCharsInURL = 5)
+
+
+# Previsione della probabilità di sito legittimo
+prob_pred <- predict(modello_logistico, newdata = nuovo_sito, type = "response")
+print(prob_pred)
+```
+
+La probabilità che esso sia legittimo è < 1 ciò indica che il modello predice in maniera corretta che il sito sarà di phishing
+
+### Test Chi-Quadrato su URLLength
 Abbiamo visto che, la variabile URLLength ha una forte asimmetria positiva e, con varie analisi, abbiamo individuato che gli URL lunghi sono più frequentemente associati a siti di phishing. 
 
 Per verificare la nostra ipotesi, dobbiamo utilizzare **l'inferenza statistica**, che ci consente di andare a capire se le statistiche derivate dal nostro campione, possono essere applicate per la popolazione intera, che, nel nostro caso, è infinita.
