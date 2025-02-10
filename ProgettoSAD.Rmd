@@ -1,7 +1,7 @@
 ---
 title: "Progetto SAD"
 author: "Consiglio Luigi & D'Antuono Francesco Paolo"
-date: "2024-11-03"
+date: "10/02/2025"
 output:
   pdf_document:
     latex_engine: xelatex
@@ -1264,15 +1264,7 @@ Inoltre, visualizzando la distribuzione dei dati generati da ChatGPT notiamo che
 
 ## Stima dei parametri
 
-### Stima puntuale
-
-```{r}
-
-
-```
-
-
-## Verifica delle ipotesi
+Usiamo il modello di regressione logistica per la stima dei parametri che influenzano la probabilità che un URL sia phishing o legittimo. Attraverso il metodo della massima verosimiglianza, andiamo a i coefficienti ($\beta$) per URLLength e NoOfOtherSpecialCharsInURL, permettendo di quantificare il loro impatto sulla classificazione. 
 
 ### Regressione logistica
 
@@ -1319,7 +1311,7 @@ La tabella mostra i risultati della regressione logistica per la classificazione
 \end{itemize}
 
 
-2. **Coefficiente ($β$)**: Indica quanto la variabile influenza la probabilità che l’URL sia legittimo (label = 1). Vediamo nel dettaglio i dati:
+2. **Coefficiente ($\beta$)**: Indica quanto la variabile influenza la probabilità che l’URL sia legittimo (label = 1). Vediamo nel dettaglio i dati:
 \begin{itemize}
 \item \textbf{Intercept}: Se un URL avesse lunghezza 0 e nessun carattere speciale, sarebbe molto probabile che sia legittimo;
 \item \textbf{URLLength}: Un aumento della lunghezza dell'URL riduce la probabilità che l'URL sia legittimo;
@@ -1334,12 +1326,14 @@ La tabella mostra i risultati della regressione logistica per la classificazione
 5. **P-value**: Indica quanto è probabile che il coefficiente sia diverso da 0 per puro caso. Se p < 0.05, la variabile è statisticamente significativa a livello alpha fissato pari a 0.05. Qui, tutte le variabili hanno **p-value < 0.001**, quindi hanno un impatto significativo.
 
 
-6. **Odds Ratio ($e^β$)**: Rappresenta quanto cambia la probabilità di essere legittimo quando la variabile aumenta di 1 unità. Vediamo nel dettaglio i dati:
+6. **Odds Ratio ($e^\beta$)**: Rappresenta quanto cambia la probabilità di essere legittimo quando la variabile aumenta di 1 unità. Vediamo nel dettaglio i dati:
 \begin{itemize}
 \item \textbf{Intercept}: Un URL senza caratteri speciali e con lunghezza zero è molto probabile che sia legittimo.
 \item \textbf{URLLength}: Un URL più lungo riduce la probabilità di essere legittimo di circa 1.14\%
 \item \textbf{NoOfOtherSpecialCharsInURL}: Aggiungere un carattere speciale riduce del 76\% la probabilità di essere legittimo (quindi aumenta di molto la probabilità di phishing).
 \end{itemize}
+
+L'Odds Ratio ha mostrato che gli URL più lunghi e con più caratteri speciali sono fortemente associati al phishing, confermando l'importanza di queste variabili nel modello predittivo.
 
 In conclusione:
 
@@ -1348,26 +1342,145 @@ In conclusione:
 
 Andiamo a testare il nostro modello, con la creazione di un dataframe che simula un sito con un URL lungo 100 caratteri e che contiene 5 altri caratteri speciali non comuni.
 
-```{r}
+```{r echo = FALSE}
 # Sito di prova
 nuovo_sito <- data.frame(URLLength = 100, NoOfOtherSpecialCharsInURL = 5)
 
 
 # Previsione della probabilità di sito legittimo
 prob_pred <- predict(modello_logistico, newdata = nuovo_sito, type = "response")
-print(prob_pred)
+
 ```
 
-La probabilità che esso sia legittimo è < 1 ciò indica che il modello predice in maniera corretta che il sito sarà di phishing
+La probabilità che esso sia legittimo è 0.0065, ciò indica che il modello predice in maniera corretta che il sito sarà di phishing
+
+
+
+## Verifica delle ipotesi 
+
+### Applicazione criterio del chi quadro per distribuzione normale
+L’obiettivo di questo test è verificare se la distribuzione della lunghezza degli URL segue una distribuzione normale. Questo è fondamentale perché molte analisi statistiche assumono una distribuzione normale dei dati; se questa ipotesi non è valida, dovremmo considerare alternative più adatte per rappresentare il fenomeno analizzato. Per fare questa analisi, utilizziamo il test del Chi-Quadro, confrontando la distribuzione osservata con quella teorica.
+
+Nel test del Chi-Quadrato, abbiamo due ipotesi da verificare:
+
+Ipotesi Nulla ($H_0$):La distribuzione della lunghezza degli URL segue una distribuzione normale.
+
+Ipotesi Alternativa ($H_1$): La distribuzione della lunghezza degli URL NON segue una distribuzione normale.
+
+```{r echo = FALSE, results='hide'}
+# Calcolo media e deviazione standard
+n <- length(dataset$URLLength)
+media <- mean(dataset$URLLength)
+media
+dev_standard <- sd(dataset$URLLength)
+dev_standard
+a<-numeric(4)
+for(i in 1:4)
+  a[i] <- qnorm(0.2*i, mean = media, sd = dev_standard)
+
+# Divisione in intervalli
+nint <- numeric(5)
+nint[1] <- length(which(dataset$URLLength < a[1]))
+nint[2] <- length(which((dataset$URLLength >= a[1]) & (dataset$URLLength < a[2])))
+nint[3] <- length(which((dataset$URLLength >= a[2]) & (dataset$URLLength < a[3])))
+nint[4] <- length(which((dataset$URLLength >= a[3]) & (dataset$URLLength < a[4])))
+nint[5] <- length(which(dataset$URLLength >= a[4]))
+nint
+
+# Calcolo chi-quadro
+chi2 <- sum(((nint-n*0.2)/sqrt(n*0.2))^2)
+chi2
+
+alpha <- 0.05
+
+qchisq(alpha/2, df = 2)
+
+qchisq(1-alpha/2, df = 2)
+```
+
+
+```{r echo = FALSE}
+# Creazione della tabella con i risultati del test Chi-Quadro
+results <- data.frame(
+  Descrizione = c(
+    "Media URLLength", 
+    "Deviazione Standard URLLength", 
+    "Chi-Quadro", 
+    "valore critico inferiore", 
+    "valore critico superioree)"
+  ),
+  Valore = c(
+    35.02048, 
+    33.79185, 
+    20957.22, 
+    0.05063562, 
+    7.377759
+  )
+)
+
+# Stampa della tabella
+kable(results, caption = "Risultati test Chi-Quadrato")
+
+```
+Il test del Chi-Quadrato confronta le frequenze osservate nei dati reali con quelle attese sotto una distribuzione normale. Per fare ciò:
+
+\begin{itemize}
+\item È stata calcolata la media e la deviazione standard della variabile URLLength.
+\item Sono stati determinati quattro valori di soglia basati sulla distribuzione normale, suddividendo la variabile in cinque intervalli di frequenza.
+\item È stato applicato il test del chi-quadro per verificare la bontà di adattamento della distribuzione dei dati alla normale attesa.
+\item Sono stati calcolati i valori critici del chi-quadro per un livello di significatività $\alpha$ = 0.05.
+\end{itemize}
+
+La statistica del Chi-Quadrato calcolata è molto elevata, indicando una forte discrepanza tra le frequenze osservate e quelle attese sotto la normale.
+
+Il p-value risulta estremamente basso (<0.05), indicando che la probabilità che questa discrepanza sia dovuta al caso è praticamente nulla.
+
+Dunque il test fornisce evidenza sufficiente per rifiutare l'ipotesi nulla $H_0$, quindi la distribuzione della lunghezza degli URL non segue una distribuzione normale.
+
+
+### Applicazione criterio del chi quadro per distribuzione di Bernoulli
+
+Poiché il test del Chi-Quadrato ha mostrato che la lunghezza degli URL non segue una distribuzione normale, vogliamo confrontarla con un’altra distribuzione che potrebbe descriverla meglio: la distribuzione di Bernoulli. La normale è una distribuzione continua, mentre la Bernoulli è discreta e adatta a variabili binarie (0/1). Per effettuare questo confronto, binarizziamo la lunghezza degli URL in due categorie:
+
+Corto (0): URL con lunghezza inferiore a una soglia (upper bound IQR).
+Lungo (1): URL con lunghezza superiore alla stessa soglia.
+
+In questo caso quindi le ipotesi sono: 
+
+Ipotesi Nulla ($H_0$):  La distribuzione binarizzata della lunghezza degli URL segue una distribuzione di Bernoulli con parametro p. Ciò significa che le frequenze osservate di URL lunghi e corti corrispondono alle frequenze attese sotto una distribuzione di Bernoulli con la probabilità stimata p.
+
+Ipotesi Alternativa ($H_1$): La distribuzione binarizzata della lunghezza degli URL NON segue una distribuzione di Bernoulli con parametro p.
+
+```{r echo = FALSE}
+# Estrazione della variabile URLLength
+url_lengths <- dataset$URLLength
+
+# Binarizzazione dei dati rispetto all'upper bound URL
+limite <- upper_bound_URL
+dati_binari <- ifelse(url_lengths > limite, 1, 0)  # Trasformiamo in 0/1
+
+# Stimiamo il parametro p della Bernoulli (proporzione di successi)
+p <- mean(dati_binari)
+
+# Calcoliamo le frequenze osservate (quanti 0 e quanti 1)
+obs_freq <- table(dati_binari)
+
+# Calcoliamo le frequenze attese sotto la distribuzione di Bernoulli con p_hat
+expected_freq <- c(length(dati_binari) * (1 - p), length(dati_binari) * p)
+
+# Test del Chi-Quadrato
+chi2_test <- chisq.test(obs_freq, p = expected_freq / sum(expected_freq), rescale.p = TRUE)
+
+```
+Il p-value misura la probabilità che le differenze tra osservato e atteso siano dovute al caso. Il p-value = 1 indica che i dati osservati sono perfettamente compatibili con la distribuzione Bernoulli ipotizzata, quindi non c'è alcuna evidenza per rifiutare l'ipotesi nulla $H_0$. Quindi possiamo concludere che la distribuzione binarizzata della lunghezza degli URL segue una distribuzione di Bernoulli.
 
 ### Test Chi-Quadrato su URLLength
-Abbiamo visto che, la variabile URLLength ha una forte asimmetria positiva e, con varie analisi, abbiamo individuato che gli URL lunghi sono più frequentemente associati a siti di phishing. 
+Ora che abbiamo stabilito che la variabile binarizzata della lunghezza degli URL segue una distribuzione Bernoulli, vogliamo capire se esiste un’associazione tra la lunghezza dell’URL e la probabilità che un sito sia di phishing.
 
-Per verificare la nostra ipotesi, dobbiamo utilizzare **l'inferenza statistica**, che ci consente di andare a capire se le statistiche derivate dal nostro campione, possono essere applicate per la popolazione intera, che, nel nostro caso, è infinita.
-
-Utilizzeremo il test del chi-quadrato che verifica l'associazione tra due variabili categoriali che sono:
+Per fare questo, utilizzeremo il test del Chi-Quadrato, che permette di valutare se due variabili categoriali sono indipendenti o se esiste una relazione statistica significativa tra di esse. Nel nostro caso, analizzeremo l’associazione tra:
 
 - **URLLenght_Cat**: Variabile URLLength suddivisa in due categorie, URL lunghi e URL corti. Il valore che discriminerà le due categorie sarà il limite superiore calcolato nel metodo dell'IQR.
+
 - **label**: Variabile categoriale che distingue URL legittimi, da URL di phishing.
 
 Definiamo le nostre due ipotesi, dove $H_0$ sarà l'ipotesi nulla e $H_1$ l'ipotesi alternativa:
@@ -1377,7 +1490,7 @@ Definiamo le nostre due ipotesi, dove $H_0$ sarà l'ipotesi nulla e $H_1$ l'ipot
 
 Se il **p-value < 0.05**, rifiutiamo $H_0$ e concludiamo che gli URL lunghi sono significativamente più associati a siti di phishing.
 
-```{r echo = FALSE}
+```{r echo = FALSE, results='hide'}
 #Test Chi-Quadrato
 dataset$URLLength_Cat <- ifelse(dataset$URLLength > upper_bound_URL, "Lungo", "Corto")
 chisq.test(table(dataset$URLLength_Cat, dataset$label))
@@ -1387,19 +1500,21 @@ chi_sq_result <- data.frame(
   Metrica = c("X-squared", "Gradi di Libertà", "p-value"),
   Valore = c(3710.6, 1, "< 2.2e-16")
 )
+```
 
+```{r echo = FALSE}
 kable(chi_sq_result, caption = "Risultati test Chi-Quadrato")
 
 ```
 
 I risultati del test mostrano come Il valore **$X^2$** è molto alto, indicando una forte deviazione dall’indipendenza e Il **p-value < 2.2e-16 è estremamente piccolo**, quindi possiamo rifiutare l’ipotesi nulla e concludere che esiste una relazione significativa tra la lunghezza degli URL e il fatto che siano di phishing.
 
-## Test Chi-Quadrato su NoOfOtherSpecialCharsInURL
+### Test Chi-Quadrato su NoOfOtherSpecialCharsInURL
 
 Anche in questo caso, utilizzeremo il test del chi-quadrato che verifica l'associazione tra due variabili categoriali che sono:
 
 - **NoOfOtherSpecialCharsInURL_Cat**: Variabile NoOfOtherSpecialCharsInURL suddivisa in due categorie, NoOfOtherSpecialCharsInURL > 6 NoOfOtherSpecialCharsInURL <= 6. Il valore che discriminerà le due categorie sarà il limite superiore calcolato nel metodo dell'IQR.
-- **label**: Variabile categoriale che distingue URL legittimi, da URL di phishing.
+- **label**: Variabile categoriale che distingue URL legittimi, da URL di phishing. 
 
 Definiamo le nostre due ipotesi, dove $H_0$ sarà l'ipotesi nulla e $H_1$ l'ipotesi alternativa:
 
@@ -1408,7 +1523,7 @@ Definiamo le nostre due ipotesi, dove $H_0$ sarà l'ipotesi nulla e $H_1$ l'ipot
 
 Se il **p-value < 0.05**, rifiutiamo $H_0$ e concludiamo che gli URL con una frequenza elevata di altri caratteri speciali sono significativamente più associati a phishing.
 
-```{r echo = FALSE}
+```{r echo = FALSE, results='hide'}
 #Test Chi-Quadrato
 dataset$NoOfOtherSpecialCharsInURL_Cat <- ifelse(dataset$NoOfOtherSpecialCharsInURL > upper_bound_special_chars, "Caratteri > 6", "Caratteri <= 6")
 chisq.test(table(dataset$NoOfOtherSpecialCharsInURL_Cat, dataset$label))
@@ -1418,7 +1533,9 @@ chi_sq_result <- data.frame(
   Metrica = c("X-squared", "Gradi di Libertà", "p-value"),
   Valore = c(1812.6, 1, "< 2.2e-16")
 )
+```
 
+```{r echo = FALSE}
 kable(chi_sq_result, caption = "Risultati test Chi-Quadrato")
 
 ```
