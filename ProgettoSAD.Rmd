@@ -1,21 +1,35 @@
 ---
-title: "Progetto SAD"
-author: "Consiglio Luigi & D'Antuono Francesco Paolo"
-date: "10/02/2025"
 output:
   pdf_document:
     latex_engine: xelatex
-  html_document: default
   header-includes:
     - \usepackage{fancyhdr}
     - \pagestyle{fancy}
     - \fancyhf{}
-    - \rfoot{\thepage} # Mostra il numero di pagina in basso a destra
-    - \lfoot{Nome documento} # Aggiungi informazioni personalizzate a sinistra
+    - \rfoot{\thepage}
+    - \lfoot{Nome documento}
+    - \renewcommand{\contentsname}{Indice}
   fontsize: 12pt
   geometry: a4paper
 ---
 
+\begin{titlepage}
+\centering
+\vspace*{5cm} % Spazio verticale per centrare il titolo
+{\LARGE \textbf{Progetto SAD} \par}
+\vspace{1cm}
+{\Large Consiglio Luigi \& D'Antuono Francesco Paolo \par}
+\vspace{1cm}
+{\large 10/02/2025 \par}
+\vfill
+\end{titlepage}
+
+\newpage
+
+\renewcommand{\contentsname}{Indice}
+\tableofcontents
+
+\newpage
 # Introduzione
 
 ## Descrizione del problema
@@ -690,6 +704,8 @@ Si può concludere che la lunghezza dell’URL è un buon indicatore, ma non è 
 
 \newpage
 # Analisi dei cluster
+
+## Analisi dei dati per RQ2
 Per effettuare il clustering, dobbiamo innanzitutto scegliere il tipo di clustering che si vuole applicare. Nel nostro caso abbiamo scelto **l'algoritmo non gerarchico K-Means**. 
 
 Dalle analisi precedenti, è stata individuata **URLLength** come variabile che influenza molto la probabilità che un URL sia di phishing oppure legittimo, dunque utilizzeremo questa variabile per il clustering, poiché risulta essere la più significativa. Ciò ci servirà per individuare possibili pattern nascosti che non siamo riusciti ad individuare fino ad ora e dare ancora più importanza alle nostre ipotesi, derivate dalle analisi passate.
