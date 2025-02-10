@@ -1368,9 +1368,7 @@ prob_pred <- predict(modello_logistico, newdata = nuovo_sito, type = "response")
 
 ```
 
-La probabilità che esso sia legittimo è 0.0065, ciò indica che il modello predice in maniera corretta che il sito sarà di phishing
-
-
+La probabilità che esso sia legittimo è 0.0065, ciò indica che il modello predice in maniera corretta che il sito sarà di phishing.
 
 ## Verifica delle ipotesi 
 
@@ -1558,8 +1556,38 @@ kable(chi_sq_result, caption = "Risultati test Chi-Quadrato")
 
 Anche in questo caso, i risultati del test mostrano come Il valore **$X^2$** è molto alto, indicando una forte deviazione dall’indipendenza e Il **p-value < 2.2e-16 è estremamente piccolo**, quindi possiamo rifiutare l’ipotesi nulla e concludere che esiste una relazione estremamente significativa tra la frequenza elevata di altri caratteri speciali e il phishing.
 
+\newpage
 # Conclusioni
 
-//Mettere risposte RQ con conclusioni finali.
+## Risultati RQ1: Quali caratteristiche degli URL sono maggiormente associate alla probabilità che un sito sia di phishing?
+
+L'analisi ha evidenziato che le seguenti variabili sono significativamente associate alla probabilità che un URL sia di phishing:
+
+- **URLLength**: Gli URL di phishing tendono ad essere più lunghi rispetto a quelli legittimi. Inoltre, il **test del Chi-Quadrato** ha mostrato una forte associazione tra URL lunghi e phishing. Gli URL superiori al limite IQR (49 caratteri) sono **100% phishing**, confermando che la lunghezza è un indicatore rilevante.
+
+- **NoOfOtherSpecialCharsInURL**: Gli URL di phishing hanno un numero di caratteri speciali significativamente più elevato. Inoltre, il **test del Chi-Quadrato** ha confermato che un numero elevato di caratteri speciali è fortemente associato agli URL di phishing. Infine gli URL con più di 6 caratteri speciali sono quasi esclusivamente phishing.
+
+- **NoOfSubDomain**: Questa variabile mostra una variabilità maggiore nei siti di phishing, ma **non è un predittore forte** rispetto alle altre due. La maggior parte degli URL (sia phishing che legittimi) ha 1 sottodominio, quindi non è discriminante.
+  
+
+L’**analisi di regressione logistica** ha confermato che:
+
+  - **URLLength ha un coefficiente negativo**, indicando che all’aumentare della lunghezza, diminuisce la probabilità che un URL sia legittimo.
+  - **NoOfOtherSpecialCharsInURL ha un impatto molto più forte** il che significa che più caratteri speciali sono presenti, più è probabile che l’URL sia phishing.
+
+**Conclusione su RQ1**:  Gli URL più lunghi e con più caratteri speciali sono fortemente associati al phishing.
+
+## Risultati RQ2: È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?
+
+Abbiamo confrontato il dataset reale con un dataset generato da ChatGPT utilizzando URLLength e applicando le stesse tecniche di clustering.
+
+Il clustering sul dataset reale mostra due gruppi distinti: URL corti e URL lunghi, con il Cluster 2 caratterizzato da un’alta variabilità e la presenza di outlier oltre i 1000 caratteri.  
+
+Nel dataset generato da ChatGPT, i cluster sono più nettamente separati ma meno variabili, con una distribuzione semplificata che sottostima la lunghezza estrema degli URL**. Inoltre, ChatGPT tende a generare valori ripetitivi, riducendo la dispersione e l'accuratezza del modello nel catturare le caratteristiche reali degli URL di phishing. In conclusione il dataset sintetico è più regolare ma meno realistico, il che potrebbe limitare l’efficacia dei modelli di rilevamento del phishing.
+
+**Conclusione su RQ2**: I dati generati dagli LLM possono essere utili per aumentare il volume di dataset reali, ma hanno limitazioni nella rappresentazione degli outlier e della variabilità reale dei dati di phishing, il che potrebbe influenzare in maniera negativa la distribuzione dei dati.  
+
+ 
+
 
 
