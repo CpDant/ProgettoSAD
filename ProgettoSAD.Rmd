@@ -141,7 +141,11 @@ removed_info <- data.frame(Tipo_variabile = sapply(removed_df, class))
 # Visualizza la tabella con kable
 kable(removed_info, caption = "Variabili Rimosse dal Dataset")
 
+```
 
+\newpage
+
+```{r echo = FALSE}
 # Creare un dataframe per la tabella di variabili rimaste
 rimaste_info <- data.frame(Tipo_variabile = sapply(dataset, class))
 
