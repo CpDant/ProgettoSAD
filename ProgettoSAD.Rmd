@@ -30,15 +30,17 @@ output:
 \tableofcontents
 
 \newpage
+
 # Introduzione
 
 ## Descrizione del problema
+
 Il phishing rappresenta una delle minacce informatiche più **diffuse e pericolose**, il cui obiettivo è sottrarre informazioni sensibili come credenziali di accesso, numeri di carte di credito e dati personali. Gli attacchi di phishing avvengono principalmente attraverso URL ingannevoli che simulano siti legittimi per indurre gli utenti a fidarsi e condividere i propri dati.
 
 La rilevazione tempestiva degli URL di phishing è essenziale per proteggere gli utenti e ridurre le conseguenze di questi attacchi. Un'analisi statistica delle proprietà degli URL può:
 
-- **Identificare schemi ricorrenti negli URL di phishing**;
-- **Evidenziare le caratteristiche più influenti per distinguere un URL legittimo da uno fraudolento**.
+-   **Identificare schemi ricorrenti negli URL di phishing**;
+-   **Evidenziare le caratteristiche più influenti per distinguere un URL legittimo da uno fraudolento**.
 
 ## Descrizione del dataset
 
@@ -46,30 +48,31 @@ Il **PhiUSIIL Phishing URL Dataset** è un dataset progettato per lo studio e l'
 
 Le variabili coprono una vasta gamma di caratteristiche, tra cui:
 
-- **Proprietà dell'URL**: lunghezza dell'URL, numero di sottodomini, presenza di caratteri speciali, e frequenza con cui un determinato TLD (Top-Level Domain, come `.com`) è associato a URL legittimi o di phishing, indicando la probabilità che un TLD specifico sia più o meno affidabile. 
-- **Caratteristiche testuali**: numero di lettere, numeri e caratteri speciali.
-- **Dettagli sul dominio**: lunghezza e struttura del dominio.
-- **Elementi strutturali della pagina**: righe di codice, lunghezza della riga più grande, numero di immagini, CSS, JavaScript, reindirizzamenti e popup.
-Il dataset è particolarmente utile per l'addestramento di modelli di machine learning per la rilevazione del phishing e per analisi statistiche mirate a comprendere i pattern e i fattori di rischio degli URL di phishing.
+-   **Proprietà dell'URL**: lunghezza dell'URL, numero di sottodomini, presenza di caratteri speciali, e frequenza con cui un determinato TLD (Top-Level Domain, come `.com`) è associato a URL legittimi o di phishing, indicando la probabilità che un TLD specifico sia più o meno affidabile.
+-   **Caratteristiche testuali**: numero di lettere, numeri e caratteri speciali.
+-   **Dettagli sul dominio**: lunghezza e struttura del dominio.
+-   **Elementi strutturali della pagina**: righe di codice, lunghezza della riga più grande, numero di immagini, CSS, JavaScript, reindirizzamenti e popup. Il dataset è particolarmente utile per l'addestramento di modelli di machine learning per la rilevazione del phishing e per analisi statistiche mirate a comprendere i pattern e i fattori di rischio degli URL di phishing.
 
 \newpage
+
 ## Obiettivi del Progetto
+
 Questo progetto si propone di rispondere a due domande di ricerca principali:
 
-1. **Quali caratteristiche degli URL sono maggiormente associate alla probabilità che un sito sia di phishing?**
-    - Variabili analizzate:
-        - **URLLength**: lunghezza dell'URL; 
-        - **NoOfSubDomain**: numero di sottodomini;
-        - **NoOfOtherSpecialCharsInURL**: numero di caratteri speciali nell'URL;
-        - **label**: classificazione dell'URL (0 phishing, 1 legittimo).
-        
-2. **È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?**
+1.  **Quali caratteristiche degli URL sono maggiormente associate alla probabilità che un sito sia di phishing?**
+    -   Variabili analizzate:
+        -   **URLLength**: lunghezza dell'URL;
+        -   **NoOfSubDomain**: numero di sottodomini;
+        -   **NoOfOtherSpecialCharsInURL**: numero di caratteri speciali nell'URL;
+        -   **label**: classificazione dell'URL (0 phishing, 1 legittimo).
+2.  **È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?**
 
- - I modelli linguistici di grandi dimensioni, possono essere utilizzati per generare dati sintetici basati su pattern appresi da dataset reali. Questa domanda mira a esplorare se tali dati sintetici possano arricchire i dataset esistenti (ad esempio simulando URL legittimi o di phishing realistici).
+-   I modelli linguistici di grandi dimensioni, possono essere utilizzati per generare dati sintetici basati su pattern appresi da dataset reali. Questa domanda mira a esplorare se tali dati sintetici possano arricchire i dataset esistenti (ad esempio simulando URL legittimi o di phishing realistici).
 
 # Caricamento e pulizia del dataset
 
 La prima fase del progetto richiede il caricamento del dataset all'interno dell'ambiente di sviluppo. Dunque, dopo aver settato il workspace, andremo a leggere, dalla cartella di lavoro attuale, il dataset che verrà poi analizzato.
+
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(dplyr)
@@ -85,11 +88,10 @@ library(ggcorrplot)
 dataset <- read.csv("Phishing_URL_Dataset_8.csv", sep = ";", header = TRUE)
 ```
 
-Inoltre, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. 
-Sono stati effettuati due controlli fondamentali:
+Inoltre, si andrà ad effettuare la pulizia dei dati in modo tale da averli pronti per le successive fasi di analisi del dataset. Sono stati effettuati due controlli fondamentali:
 
-- **Controllo sui tipi di dati**: abbiamo innanzitutto controllato che i tipi di dati corrispondessero con la loro rappresentazione nella colonna specifica. I risultati hanno dato esito positivo e non c'è stato bisogno di modificare il dataset.
-- **Controllo sui valori mancanti**: anche in questo caso il controllo ha dato esito positivo. Dunque non ci sono righe con valori mancanti all'interno del dataset.
+-   **Controllo sui tipi di dati**: abbiamo innanzitutto controllato che i tipi di dati corrispondessero con la loro rappresentazione nella colonna specifica. I risultati hanno dato esito positivo e non c'è stato bisogno di modificare il dataset.
+-   **Controllo sui valori mancanti**: anche in questo caso il controllo ha dato esito positivo. Dunque non ci sono righe con valori mancanti all'interno del dataset.
 
 ```{r echo = FALSE, results = 'hide'}
 
@@ -98,18 +100,18 @@ Sono stati effettuati due controlli fondamentali:
 str(dataset)
 ```
 
-
 ```{r echo = FALSE, results = 'hide'}
 
 #Controllo presenza valori mancanti nel dataset
 colSums(is.na(dataset))
 
 ```
+
 \newpage
 
 ## Rimozione feature ridondanti
-Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle **56** variabili che sono presenti nel dataset originale, ne sono rimaste **30**, elenchiamo di seguito in una tabella le variabili.
 
+Abbiamo analizzato nel dettaglio le feature del dataset e si è notato che ci sono alcune feature del dataset che sono ridondanti e che in qualche modo hanno una certa relazione, rappresentando informazioni simili. Dunque, delle **56** variabili che sono presenti nel dataset originale, ne sono rimaste **30**, elenchiamo di seguito in una tabella le variabili.
 
 ```{r echo = FALSE}
 # Lista delle variabili rimosse
@@ -129,7 +131,6 @@ dataset <- dataset[, !names(dataset) %in% c("FILENAME", "URL", "URLSimilarityInd
 "CharContinuationRate", "TLDLegitimateProb", "URLCharProb", "NoOfObfuscatedChar", "ObfuscationRatio", "LetterRatioInURL", "DegitRatioInURL", "SpacialCharRatioInURL", "Title", "DomainTitleMatchScore", "HasFavicon", "Robots", "NoOfURLRedirect", "NoOfSelfRedirect", "HasSubmitButton", "HasPasswordField", "HasCopyrightInfo", "NoOfImage", "NoOfCSS", "NoOfJS", "NoOfSelfRef", "NoOfEmptyRef", "NoOfExternalRef")]
 
 ```
-
 
 ```{r echo = FALSE}
 
@@ -151,19 +152,27 @@ par(mfrow=c(1,1))
 ```
 
 \newpage
+
 # Statistica descrittiva univariata
 
+L'analisi statistica univariata rappresenta il primo passo nell'esplorazione dei dati del progetto. In questa sezione, vengono esaminate le principali caratteristiche delle variabili chiave per rispondere alla prima domanda di ricerca (RQ1): "Quali caratteristiche degli URL sono maggiormente associate alla probabilità che un sito sia phishing?".
+
+L'analisi inizia con la rappresentazione delle frequenze assolute, per visualizzare la distribuzione delle variabili. Successivamente, vengono calcolati gli indici di centralità e indici di dispersione, al fine di comprendere meglio la variabilità dei dati. Per individuare eventuali anomalie, sono stati analizzati quartili e boxplot, seguiti dalla rimozione degli outlier tramite il metodo dell'IQR. Infine, è stato effettuato un confronto tra le distribuzioni dei dati prima e dopo la rimozione degli outlier, per valutarne l’impatto sulle analisi.
+
+I risultati di questa fase forniscono un quadro chiaro sulle caratteristiche degli URL phishing rispetto a quelli legittimi, ponendo le basi per ulteriori analisi comparative e multivariate.
+
 ## Analisi dei dati per RQ1
+
 Le feature che metteremo sotto analisi per la RQ1 sono le seguenti:
 
-- **URLLength**: lunghezza dell'URL;
-- **NoOfSubDomain**: i sottodomini sono URL univoci che risiedono sul dominio acquistato, come estensione davanti al dominio normale. Qui viene identficato il numero di caratteri del sottodominio;
-- **NoOfOtherSpecialCharsInURL**: rappresenta il numero di caratteri speciali in un URL.
-- **label**: classificazione dell'URL (0 phishing, 1 legittimo).
+-   **URLLength**: lunghezza dell'URL;
+-   **NoOfSubDomain**: i sottodomini sono URL univoci che risiedono sul dominio acquistato, come estensione davanti al dominio normale. Qui viene identficato il numero di caratteri del sottodominio;
+-   **NoOfOtherSpecialCharsInURL**: rappresenta il numero di caratteri speciali in un URL.
+-   **label**: classificazione dell'URL (0 phishing, 1 legittimo).
 
 ### Frequenze assolute e barplot
 
-Di seguito vengono mostrati i grafici delle frequenze assolute. 
+Di seguito vengono mostrati i grafici delle frequenze assolute.
 
 ```{r echo = FALSE}
 #Calcolo frequenze assolute
@@ -205,6 +214,7 @@ par(mfrow=c(1,1))
 Come si può notare dai grafici, i dati sono molto concentrati nella parte sinistra, ciò ci lascia presupporre che probabilmente ci saranno degli **outlier** da tenere in considerazione. Successivamente analizzeremo in maniera quantitativa i dati, per determinare i valori di questi outlier e dei range più interessanti da prendere in considerazione per le analisi successive.
 
 \newpage
+
 ### Indici di centralità
 
 ```{r echo = FALSE}
@@ -234,11 +244,11 @@ kable(stats_df, caption = "Indici di Centralità")
 
 Analizziamo nel dettaglio gli indici di centralità per ogni variabile:
 
-- **URLLength**: i dati mostrano una distribuzione asimmetrica positiva, dove la maggior parte degli URL ha lunghezze vicino a 28 (mediana), ma ci sono alcuni URL molto lunghi (fino a 1769), che spostano la media verso l'alto rispetto alla mediana.
-- **NoOfSubDomain**: la distribuzione è fortemente concentrata verso il basso. La maggior parte degli URL ha 1 sottodominio (mediana e moda), e solo pochi URL superano questa soglia, con un massimo di 8 sottodomini.
-- **NoOfOtherSpecialCharsInURL**: simile a quella di **NoOfSubDomain**, questa variabile è fortemente concentrata verso il basso, con la maggior parte degli URL che contengono 1 solo carattere speciale. Ci sono però alcuni URL con un numero molto elevato di caratteri speciali (fino a 87), che spostano la media verso l'alto.
+-   **URLLength**: i dati mostrano una distribuzione asimmetrica positiva, dove la maggior parte degli URL ha lunghezze vicino a 28 (mediana), ma ci sono alcuni URL molto lunghi (fino a 1769), che spostano la media verso l'alto rispetto alla mediana.
+-   **NoOfSubDomain**: la distribuzione è fortemente concentrata verso il basso. La maggior parte degli URL ha 1 sottodominio (mediana e moda), e solo pochi URL superano questa soglia, con un massimo di 8 sottodomini.
+-   **NoOfOtherSpecialCharsInURL**: simile a quella di **NoOfSubDomain**, questa variabile è fortemente concentrata verso il basso, con la maggior parte degli URL che contengono 1 solo carattere speciale. Ci sono però alcuni URL con un numero molto elevato di caratteri speciali (fino a 87), che spostano la media verso l'alto.
 
-### Indici di dispersione 
+### Indici di dispersione
 
 ```{r echo = FALSE}
 
@@ -256,11 +266,12 @@ kable(dispersion_stats_df, caption = "Indici di Dispersione")
 
 Analizziamo nel dettaglio gli indici di dispersione per ogni variabile:
 
-- **URLLength**: la varianza riflette anch'essa la variabilità complessiva dei dati, ma è influenzata dagli outlier. Infatti la deviazione standard è moderata rispetto alla media, indicando una variabilità significativa, ma non estrema. Dunque, la lunghezza degli URL è distribuita in modo relativamente coerente intorno alla media, con una maggiore densità vicino alla mediana.
-- **NoOfSubDomain**: la varianza e la deviazione standard sono basse, indicando una distribuzione stretta attorno alla media. Dunque è una variabile poco dispersa, concentrata in un intervallo ristretto, con valori superiori a 1 rari.
-- **NoOfOtherSpecialCharsInURL**: la varianza e la deviazione standard riflettono una moderata dispersione intorno alla media. Dunque, la variabile è asimmetrica positiva, con la maggior parte dei dati vicini a 1 e pochi URL con molti caratteri speciali che aumentano la dispersione.
+-   **URLLength**: la varianza riflette anch'essa la variabilità complessiva dei dati, ma è influenzata dagli outlier. Infatti la deviazione standard è moderata rispetto alla media, indicando una variabilità significativa, ma non estrema. Dunque, la lunghezza degli URL è distribuita in modo relativamente coerente intorno alla media, con una maggiore densità vicino alla mediana.
+-   **NoOfSubDomain**: la varianza e la deviazione standard sono basse, indicando una distribuzione stretta attorno alla media. Dunque è una variabile poco dispersa, concentrata in un intervallo ristretto, con valori superiori a 1 rari.
+-   **NoOfOtherSpecialCharsInURL**: la varianza e la deviazione standard riflettono una moderata dispersione intorno alla media. Dunque, la variabile è asimmetrica positiva, con la maggior parte dei dati vicini a 1 e pochi URL con molti caratteri speciali che aumentano la dispersione.
 
 ### Quartili e Boxplot
+
 Il calcolo dei quartili ci consentirà di capire nel dettaglio la distribuzione dei dati in percentuale.
 
 ```{r echo = FALSE}
@@ -278,11 +289,12 @@ quartile_stats_df <- data.frame(
 kable(quartile_stats_df, caption = "Quartili")
 
 ```
+
 Anilizziamo nel dettaglio i quartili per ogni variabile:
 
-- **URLLength**: abbiamo conferma che la lunghezza dell'URL ha una distribuzione asimmetrica positiva, con la maggior parte dei dati concentrata tra 24 e 34, ma valori estremamente alti che rappresentano eccezioni.
-- **NoOfSubDomain**: la concentrazione dei quartili (Q1 = Q2 = Q3 = 1) evidenzia che il numero di sottodomini è stabile e poco variabile. Infatti, solo pochi URL oltre Q3 contengono più di 1 sottodominio, con un massimo isolato di 8.
-- **NoOfOtherSpecialCharsInURL**: la maggior parte degli URL contiene pochissimi caratteri speciali, con il 75% degli URL che ha al massimo 3 caratteri speciali. La presenza di un massimo di 87 caratteri speciali crea una alta variabilità, come confermato dalla deviazione standard e dal range ampio.
+-   **URLLength**: abbiamo conferma che la lunghezza dell'URL ha una distribuzione asimmetrica positiva, con la maggior parte dei dati concentrata tra 24 e 34, ma valori estremamente alti che rappresentano eccezioni.
+-   **NoOfSubDomain**: la concentrazione dei quartili (Q1 = Q2 = Q3 = 1) evidenzia che il numero di sottodomini è stabile e poco variabile. Infatti, solo pochi URL oltre Q3 contengono più di 1 sottodominio, con un massimo isolato di 8.
+-   **NoOfOtherSpecialCharsInURL**: la maggior parte degli URL contiene pochissimi caratteri speciali, con il 75% degli URL che ha al massimo 3 caratteri speciali. La presenza di un massimo di 87 caratteri speciali crea una alta variabilità, come confermato dalla deviazione standard e dal range ampio.
 
 ```{r echo = FALSE}
 
@@ -325,6 +337,7 @@ par(mfrow=c(1,1))
 I boxplot sono molto schiacciati e poco visualizzabili, dovuto dalla variabilità elevata dei dati. Ciò ci porta ad analizzare e capire come gestire gli outlier, soprattutto nella variabile **URLLength** e **NoOfOtherSpecialCharsInURL**. Proviamo a rimuovere gli outlier per capire se essi sono significativi per le analisi successive.
 
 ### Rimozione outlier tramite metodo dell'IQR
+
 Abbiamo già calcolato precedentemente l'IQR, dunque, ci basta semplicemente **quantificare il limite superiore e inferiore**, oltre il quale i nostri dati saranno considerati outlier.
 
 ```{r echo = FALSE}
@@ -373,6 +386,7 @@ kable(summary_stats_df, caption = "Indici di centralità e quartili")
 Dopo la rimozione degli outlier, si può notare che c'è stata una notevole variazione degli indici stiatistici, ciò potrebbe comportare che gli outlier in realtà sono significativi e non devono essere rimossi per le analisi che dovremo condurre. Andiamo a confrontare le distribuzioni per evidenziare ulteriori differenze.
 
 ### Confronto distribuzioni pre e post-filtraggio
+
 Per confrontare le distribuzioni, andremo a rappresentare dei barplot pre e post-filtraggio e compararli per capire l'andamento dei dati.
 
 ```{r echo = FALSE}
@@ -424,8 +438,7 @@ barplot(
 
 ```
 
-Come è possibile vedere dai grafici, le distribuzioni dei dati, anche se sono molto più visibili, non sono confrontabili, poiché sono distribuzioni differenti che spostano la centralità dei dati, cambiandone il significato. Dunque è molto probabile che gli outliers in realtà sono dati significativi che non bisogna rimuovere. Andiamo a calcolare le probabilità che un sito sia di phishing oppure legittimo, pre e post-filtraggio. 
-Ciò ci darà un ottimo indizio sull'importanza degli outliers e quindi su come dovranno essere trattati.
+Come è possibile vedere dai grafici, le distribuzioni dei dati, anche se sono molto più visibili, non sono confrontabili, poiché sono distribuzioni differenti che spostano la centralità dei dati, cambiandone il significato. Dunque è molto probabile che gli outliers in realtà sono dati significativi che non bisogna rimuovere. Andiamo a calcolare le probabilità che un sito sia di phishing oppure legittimo, pre e post-filtraggio. Ciò ci darà un ottimo indizio sull'importanza degli outliers e quindi su come dovranno essere trattati.
 
 ```{r echo = FALSE}
 # Percentuale di phishing nel dataset originale
@@ -486,12 +499,11 @@ Andando a flitrare i dataset solo per gli outlier esclusi, notiamo come ci sia u
 
 ## Analisi statistica comparativa
 
-In questa sezione viene condotta un'analisi esplorativa comparativa,
-in cui viene diviso il dataset in 2 subdataset, uno contenente solo gli URL legittimi ed uno solo gli URL di phishing. Qui vengono comparati gli indici di centralità e dispersione dei due subdataset per comprendere meglio la distribuzione dei dati nei due casi distinti.
+In questa sezione viene condotta un'analisi esplorativa comparativa, in cui viene diviso il dataset in 2 subdataset, uno contenente solo gli URL legittimi ed uno solo gli URL di phishing. Qui vengono comparati gli indici di centralità e dispersione dei due subdataset per comprendere meglio la distribuzione dei dati nei due casi distinti.
 
 ### Confronto distribuzioni dataset phishing e dataset legittimo
-Per confrontare le distribuzioni, andremo a rappresentare dei barplot per il dataset di phishing e per il dataset legittimo, in modo da capire l'andamento dei dati.
 
+Per confrontare le distribuzioni, andremo a rappresentare dei barplot per il dataset di phishing e per il dataset legittimo, in modo da capire l'andamento dei dati.
 
 ```{r echo = FALSE}
 
@@ -625,6 +637,7 @@ kable(phishing_stats, caption = "Statistiche descrittive per i siti di phishing"
 Dall'analisi dei dati emergono alcune differenze chiave tra i siti legittimi e quelli di phishing rispetto alle variabili esaminate.
 
 **1. URLLength**:
+
 \begin{itemize}
 \item \textbf{Media}: i siti di phishing hanno una lunghezza media degli URL significativamente maggiore rispetto ai siti legittimi.
 \item \textbf{Mediana}: la mediana degli URL phishing è più alta rispetto ai siti legittimi, confermando che i siti di phishing tendono ad avere URL più lunghi.
@@ -635,6 +648,7 @@ Dall'analisi dei dati emergono alcune differenze chiave tra i siti legittimi e q
 Quindi possiamo notare che la lunghezza dell'URL è un forte indicatore di phishing, con URL significativamente più lunghi e più variabili nei siti fraudolenti.
 
 **2. NoOfSubDomain**:
+
 \begin{itemize}
 \item \textbf{Media}: la differenza è minima tra siti legittimi e siti phishing, suggerendo che questa caratteristica non è particolarmente discriminante.
 \item \textbf{Mediana}: identica per entrambe le categorie, confermando che la maggior parte degli URL ha un solo sottodominio.
@@ -644,7 +658,8 @@ Quindi possiamo notare che la lunghezza dell'URL è un forte indicatore di phish
 
 Qui notiamo che il numero di sottodomini non sembra un forte predittore di phishing, ma nei siti fraudolenti c'è una maggiore variabilità.
 
-**3. NoOfOtherSpecialCharsInURL**: 
+**3. NoOfOtherSpecialCharsInURL**:
+
 \begin{itemize}
 \item \textbf{Media}: i siti di phishing contengono una media molto più alta di caratteri speciali rispetto ai siti legittimi.
 \item \textbf{Mediana}: anche la mediana è maggiore nei siti phishing (3 vs 1).
@@ -655,6 +670,7 @@ Qui notiamo che il numero di sottodomini non sembra un forte predittore di phish
 Da ciò si evince che un numero elevato di caratteri speciali nell’URL è un forte indicatore di phishing, poiché gli URL fraudolenti tendono ad avere più simboli rispetto ai siti legittimi.
 
 \newpage
+
 # Statistica descrittiva multivariata
 
 In questa sezione analizzeremo la **matrice di correlazione** per valutare le relazioni tra le variabili in esame. Il nostro obiettivo è individuare eventuali associazioni tra le variabili, verificando se esistono legami significativi che possano influenzare l’interpretazione dei dati. Questo ci permetterà di comprendere meglio la struttura del dataset e di trarre spunti utili per le analisi successive.
@@ -706,16 +722,25 @@ print(paste("Coefficiente di Determinazione (R^2):", round(r_squared, 4)))
 
 ```
 
-Esso è **$R^2$ = 0.6222**, ciò significa che il 62.22% della variabilità nel numero di caratteri speciali può essere spiegata dalla lunghezza dell'URL. Non è un modello perfetto, ma mostra una correlazione moderatamente forte: c'è una tendenza chiara, anche se non tutti i punti seguono perfettamente la retta di regressione.
+Esso è $R^2$ = 0.6222, ciò significa che il 62.22% della variabilità nel numero di caratteri speciali può essere spiegata dalla lunghezza dell'URL. Non è un modello perfetto, ma mostra una correlazione moderatamente forte: c'è una tendenza chiara, anche se non tutti i punti seguono perfettamente la retta di regressione.
 
 Si può concludere che la lunghezza dell’URL è un buon indicatore, ma non è l’unico fattore che determina il numero di caratteri speciali negli URL.
 
-
 \newpage
+
 # Analisi dei cluster
 
+L'analisi dei cluster avrà l'obiettivo di individuare gruppi omogenei di URL sulla base delle loro caratteristiche, al fine di comprendere meglio i pattern associati agli URL di phishing e legittimi. Questa fase risponderà alla seconda domanda di ricerca (RQ2): "È possibile utilizzare i dati generati dai LLM per migliorare la qualità di dataset reali?".
+
+Per determinare il numero ottimale di cluster, verranno applicati il metodo dell’Elbow e il metodo della Silhouette, che aiuteranno a stabilire la suddivisione più adeguata dei dati. Successivamente, verrà implementato l'algoritmo K-means, sia con una scelta casuale dei centroidi sia utilizzando un approccio gerarchico per migliorarne la stabilità.
+
+L’analisi della bontà del clustering verrà valutata attraverso metriche come il Within-Cluster Sum of Squares (WCSS), il Between-Cluster Sum of Squares (BCSS) e l’indice di Calinski-Harabasz, per confermare la separazione tra gli URL più lunghi (tipicamente phishing) e quelli più corti (maggiormente legittimi). Successivamente, verrà condotta un’analisi descrittiva dei cluster, con il confronto tra le distribuzioni e la visualizzazione grafica delle caratteristiche di ciascun gruppo.
+
+Infine, verrà effettuato un confronto tra il clustering applicato al dataset originale e quello ottenuto sul dataset generato da ChatGPT, per evidenziare le differenze nella distribuzione dei dati sintetici rispetto ai dati reali. Questa analisi permetterà di valutare il grado di fedeltà dei dati generati rispetto alla struttura statistica degli URL reali, mettendo in luce eventuali limiti dell’uso di dati sintetici nella modellazione del phishing.
+
 ## Analisi dei dati per RQ2
-Per effettuare il clustering, dobbiamo innanzitutto scegliere il tipo di clustering che si vuole applicare. Nel nostro caso abbiamo scelto **l'algoritmo non gerarchico K-Means**. 
+
+Per effettuare il clustering, dobbiamo innanzitutto scegliere il tipo di clustering che si vuole applicare. Nel nostro caso abbiamo scelto **l'algoritmo non gerarchico K-Means**.
 
 Dalle analisi precedenti, è stata individuata **URLLength** come variabile che influenza molto la probabilità che un URL sia di phishing oppure legittimo, dunque utilizzeremo questa variabile per il clustering, poiché risulta essere la più significativa. Ciò ci servirà per individuare possibili pattern nascosti che non siamo riusciti ad individuare fino ad ora e dare ancora più importanza alle nostre ipotesi, derivate dalle analisi passate.
 
@@ -724,7 +749,6 @@ Prima di passare all'applicazione del clustering, dobbiamo derivare quale è il 
 ## Metodo dell'Elbow
 
 Per scegliere il numero ottimale di cluster, utilizzeremo il **metodo dell'Elbow**, che analizza la riduzione del **Within-Cluster Sum of Squares** (WCSS) al variare di K. Dal grafico ottenuto, individueremo il **punto di flessione** in cui la riduzione del WCSS rallenta, suggerendo il numero ideale di cluster. Se necessario, possiamo confermare la scelta con altre metriche come il **Silhouette Score**.
-
 
 ```{r echo = FALSE}
 # Estrarre solo la colonna URLLength
@@ -791,9 +815,9 @@ L'applicazione del K-means è stata fatta, come già spiegato, con **K = 2**, ut
 km<-kmeans(data_cluster, center=2, iter.max=10, nstart=10)
 ```
 
-
 ### Analisi della bontà del clustering
-Abbiamo deciso di calcolare alcune **metriche di bontà** per valutare la qualità del clustering ottenuto con K-Means. In particolare, abbiamo analizzato i **centroidi dei cluster**, la **varianza interna ai cluster (WCSS)**, la **separazione tra i cluster (BCSS)** e l'**indice di Calinski-Harabasz**, che confronta i due valori per misurare l'efficacia della suddivisione. 
+
+Abbiamo deciso di calcolare alcune **metriche di bontà** per valutare la qualità del clustering ottenuto con K-Means. In particolare, abbiamo analizzato i **centroidi dei cluster**, la **varianza interna ai cluster (WCSS)**, la **separazione tra i cluster (BCSS)** e l'**indice di Calinski-Harabasz**, che confronta i due valori per misurare l'efficacia della suddivisione.
 
 ```{r echo = FALSE}
 #centroidi del cluster
@@ -841,11 +865,12 @@ kable(results_table, caption = "Risultati del Clustering")
 
 Dai risultati emerge che i due cluster individuati sono sbilanciati a causa della distribuzione dei dati, con centroidi molto distanti tra loro.
 
-Nonostante lo sbilanciamento tra i cluster, l’analisi delle metriche conferma che il clustering è significativo e ben separato, dato che il valore elevato della BCSS indica che i cluster sono ben separati, mentre la WCSS mostra una certa dispersione interna. L'indice di Calinski-Harabasz è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa.  
+Nonostante lo sbilanciamento tra i cluster, l’analisi delle metriche conferma che il clustering è significativo e ben separato, dato che il valore elevato della BCSS indica che i cluster sono ben separati, mentre la WCSS mostra una certa dispersione interna. L'indice di Calinski-Harabasz è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa.
 
 In conclusione, il clustering risulta essere efficace, con gruppi ben separati e una buona coesione interna.
 
 ### Analisi descrittiva dei cluster
+
 Dopo aver valutato la bontà dei cluster, andiamo a determinare in maniera quantitativa, come sono state divise le osservazioni del dataset.
 
 ```{r echo = FALSE}
@@ -866,12 +891,14 @@ stats_cluster_df <- data.frame(
 kable(stats_cluster_df, caption = "Statistiche descrittive per i due cluster")
 
 ```
+
 I due cluster assumono un significato più importante dopo aver visualizzato gli indici di centralità e di dispersione, infatti avremo che:
 
-- **Cluster1**: gli URL in questo cluster sono molto più corti e hanno una distribuzione più compatta, con una bassa variabilità. La media e la mediana sono vicine, segnalando una distribuzione più simmetrica rispetto al Cluster 2. Questo cluster rappresenta dunque URL più corti, che potrebbero essere più tipici di siti legittimi.
-- **Cluster2**: questo cluster contiene URL significativamente più lunghi, con un'alta variabilità (deviazione standard elevata). La mediana è inferiore alla media, indicando la presenza di URL estremamente lunghi che alzano la media. Dunque, in questo cluster sono stati raggruppati tutti gli URL più lunghi che sono di phishing, dove sono inclusi anche gli outliers.
+-   **Cluster1**: gli URL in questo cluster sono molto più corti e hanno una distribuzione più compatta, con una bassa variabilità. La media e la mediana sono vicine, segnalando una distribuzione più simmetrica rispetto al Cluster 2. Questo cluster rappresenta dunque URL più corti, che potrebbero essere più tipici di siti legittimi.
+-   **Cluster2**: questo cluster contiene URL significativamente più lunghi, con un'alta variabilità (deviazione standard elevata). La mediana è inferiore alla media, indicando la presenza di URL estremamente lunghi che alzano la media. Dunque, in questo cluster sono stati raggruppati tutti gli URL più lunghi che sono di phishing, dove sono inclusi anche gli outliers.
 
 ### Grafici per confronto dei cluster
+
 Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una visione più diretta ed esplicativa della differenza tra i due cluster.
 
 ```{r echo = FALSE}
@@ -921,9 +948,10 @@ km2<-kmeans(data_cluster, centers=centroidiIniziali, nstart=1)
 ```
 
 \newpage
-### Analisi della bontà del clustering
-Anche in questa analisi utilizzeremo le metriche introdotte precedentemente. 
 
+### Analisi della bontà del clustering
+
+Anche in questa analisi utilizzeremo le metriche introdotte precedentemente.
 
 ```{r echo = FALSE}
 #centroidi del cluster
@@ -968,15 +996,15 @@ results_table <- data.frame(
 kable(results_table, caption = "Risultati del Clustering")
 
 ```
- 
+
 Anche in questo caso dai risultati emerge che i due cluster individuati sono sbilanciati a causa della distribuzione dei dati, con centroidi molto distanti tra loro.
 
-Nonostante lo sbilanciamento tra i cluster, l’analisi delle metriche conferma che il clustering è significativo e ben separato, dato che il valore elevato della BCSS indica che i cluster sono ben separati, mentre la WCSS mostra una certa dispersione interna. L'indice di Calinski-Harabasz è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa. 
+Nonostante lo sbilanciamento tra i cluster, l’analisi delle metriche conferma che il clustering è significativo e ben separato, dato che il valore elevato della BCSS indica che i cluster sono ben separati, mentre la WCSS mostra una certa dispersione interna. L'indice di Calinski-Harabasz è molto alto, confermando che il clustering è ben strutturato e che la divisione in due gruppi è significativa.
 
 Le metriche indicano che i cluster sono ben separati dato dal valore elevato della BCSS, ma c'è ancora dispersione interna come mostra la WCSS. L’indice di Calinski-Harabasz conferma una buona qualità del clustering, anche se leggermente inferiore alla precedente esecuzione.
 
-
 ### Analisi descrittiva dei cluster
+
 Dopo aver valutato la qualità del clustering, analizziamo in modo quantitativo come le osservazioni del dataset sono state suddivise tra i cluster.
 
 ```{r echo = FALSE}
@@ -1007,6 +1035,7 @@ L'analisi delle statistiche descrittive mostra una chiara distinzione tra i due 
 Questi risultati confermano che il clustering ha separato efficacemente gli URL lunghi da quelli più corti, con il Cluster 1 caratterizzato da una struttura più uniforme e il Cluster 2 da una maggiore dispersione.
 
 ### Grafici per confronto dei cluster
+
 Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una visione più diretta ed esplicativa della differenza tra i due cluster.
 
 ```{r echo = FALSE}
@@ -1036,9 +1065,9 @@ plot1 + plot2
 
 Questi due grafici evidenziano ancora meglio la chiara separazione tra i due cluster: il **Cluster 1** comprende URL più brevi, mentre il **Cluster 2** contiene URL significativamente più lunghi.
 
-
 ## Caricamento e pulizia dataset generato da ChatGPT
-### Introduzione all'Analisi dei Dati Sintetici Generati  
+
+### Introduzione all'Analisi dei Dati Sintetici Generati
 
 In questa sezione utilizzeremo un **Large Language Model**, nello specifico **ChatGPT**, per generare un dataset sintetico che riproduca le caratteristiche del dataset reale. L’obiettivo è verificare se i dati sintetici mantengono la struttura statistica dei dati originali e se possono essere utilizzati in analisi successive. Per farlo, applicheremo gli stessi processi di pulizia e confrontando il clustering dei due dataset. Questo ci permetterà di valutare l'affidabilità e l'utilità dei dati generati rispetto a quelli reali.
 
@@ -1100,8 +1129,7 @@ print(elbow_plot_LLM)
 
 ```
 
-Anche in questo caso con il **metodo dell'elbow** avremo che **K = 2 o K = 3**, ciò significa che avremo bisogno del metodo della silhouette per poter stabilire il numero K di cluster ottimale. 
-
+Anche in questo caso con il **metodo dell'elbow** avremo che **K = 2 o K = 3**, ciò significa che avremo bisogno del metodo della silhouette per poter stabilire il numero K di cluster ottimale.
 
 ### Metodo della Silhouette
 
@@ -1130,6 +1158,7 @@ points(k_values_LLM[1], silhouette_scores_LLM[1], col = "red", cex = 2, lwd = 2)
 Il grafico della silhouette restituisce come valore ottimale **K = 10**, ma con una distanza molto piccola tra le silhouette medie, ciò significa che comunque non è detto che una separazione cosi netta di cluster, porterà ad un risultato ottimale. Dunque procederemo con **K = 2**, forti anche dell'analisi fatta con il metodo dell'elbow.
 
 ### Applicazione del K-means
+
 L'applicazione del K-means è stata fatta anche in questo caso con K = 2 e nstart = 10.
 
 ```{r echo = FALSE, results = 'hide'}
@@ -1138,6 +1167,7 @@ km_LLM <- kmeans(data_cluster_LLM, center=2, iter.max=10, nstart=50)
 ```
 
 ### Analisi della bontà del clustering
+
 Valutiamo i cluster con le metriche di bontà già utilizzate per il dataset originale.
 
 ```{r echo = FALSE}
@@ -1185,12 +1215,13 @@ kable(results_table, caption = "Risultati del Clustering")
 
 Dai risultati di queste analisi emerge che:
 
-- I due cluster sono ben separati: il Calinski-Harabasz e BCSS elevato confermano la distinzione tra URL corti e lunghi;
-- Il grado di coesione all'interno di uno stesso cluster è buono, ma potrebbe essere migliore, poiché il WCSS è elevato.
+-   I due cluster sono ben separati: il Calinski-Harabasz e BCSS elevato confermano la distinzione tra URL corti e lunghi;
+-   Il grado di coesione all'interno di uno stesso cluster è buono, ma potrebbe essere migliore, poiché il WCSS è elevato.
 
 Per il momento i dati rispecchiano ciò che è stato derivato con il dataset originale, bisogna capire ora la centralità e la dispersione di questi dati.
 
 ### Analisi descrittiva dei cluster generati da ChatGPT
+
 Dopo aver valutato la bontà dei cluster, andiamo a determinare in maniera quantitativa, come sono state divise le osservazioni del dataset.
 
 ```{r echo = FALSE}
@@ -1218,14 +1249,16 @@ kable(stats_cluster_LLM_df, caption = "Statistiche descrittive per i due cluster
 
 
 ```
+
 Anche in questo caso i cluster assumono un significato più profondo che ci consente di individuare che:
 
-- **Cluster1**: questo cluster contiene URL più lunghi, con una variabilità moderata. La mediana vicina alla media suggerisce una distribuzione relativamente bilanciata.
-- **Cluster2**: gruppo di URL moderatamente più corti, con una minore dispersione rispetto al Cluster 1.
+-   **Cluster1**: questo cluster contiene URL più lunghi, con una variabilità moderata. La mediana vicina alla media suggerisce una distribuzione relativamente bilanciata.
+-   **Cluster2**: gruppo di URL moderatamente più corti, con una minore dispersione rispetto al Cluster 1.
 
 In questo caso avremo che i due cluster sono distinti, rispettando gli andamenti visti per i due cluster del dataset originale, ma i dati sono distrbuiti in maniera quasi normale poiché chatGPT li ha generati automaticamente in questo modo. Ciò vuol dire che è più complicato avere outliers che influenzino di molto la distribuzione dei dati.
 
 ### Grafici per confronto dei cluster
+
 Andiamo a visualizzare le distribuzioni in maniera grafica, per avere una visione più diretta ed esplicativa della differenza tra i due cluster.
 
 ```{r echo = FALSE}
@@ -1256,15 +1289,15 @@ plot1 + plot2
 
 Andiamo ad analizzare nel dettaglio il grafico:
 
-- Il Cluster 1 contiene URL significativamente più lunghi, con una distribuzione che si estende ben oltre 100 caratteri e una maggiore dispersione.
-- Il Cluster 2 contiene URL relativamente corti, con lunghezze ben distribuite tra 0 e circa 50.
-- I valori sono più contenuti, dunque, la dispersione è minore rispetto al dataset originale.
-- Il Cluster 1 ha una variabilità elevata, mentre il Cluster 2 è molto più compatto.
+-   Il Cluster 1 contiene URL significativamente più lunghi, con una distribuzione che si estende ben oltre 100 caratteri e una maggiore dispersione.
+-   Il Cluster 2 contiene URL relativamente corti, con lunghezze ben distribuite tra 0 e circa 50.
+-   I valori sono più contenuti, dunque, la dispersione è minore rispetto al dataset originale.
+-   Il Cluster 1 ha una variabilità elevata, mentre il Cluster 2 è molto più compatto.
 
 Confrontando il clustering applicato sul dataset originale, rispetto a quello applicato sul dataset generato da ChatGPT avremo che:
 
-- Nel dataset sintetico, i cluster sembrano essere più **nettamente separati** e con meno varianza interna.
-- I dati generati da ChatGPT sembrano sottostimare la lunghezza estrema degli URL, mancando gli outlier evidenti nel dataset reale. Infatti il clustering nei dati generati risulta essere più regolare e meno rumoroso rispetto alla realtà.
+-   Nel dataset sintetico, i cluster sembrano essere più **nettamente separati** e con meno varianza interna.
+-   I dati generati da ChatGPT sembrano sottostimare la lunghezza estrema degli URL, mancando gli outlier evidenti nel dataset reale. Infatti il clustering nei dati generati risulta essere più regolare e meno rumoroso rispetto alla realtà.
 
 Il dataset generato da ChatGPT semplifica la distribuzione della lunghezza degli URL, evitando la presenza di valori estremi che invece si trovano nel dataset reale. Questo potrebbe influenzare l’accuratezza di modelli basati su questi dati, specialmente se i pattern delle lunghezze degli URL sono critici per distinguere siti legittimi da siti di phishing.
 
@@ -1280,16 +1313,23 @@ barplot(
 )
 ```
 
-
-
 Inoltre, visualizzando la distribuzione dei dati generati da ChatGPT notiamo che, vengono generati dati che **non rispettano quello che è l'andamento reale dei dati**, poiché abbiamo una maggiore frequenza di un singolo valore (14), e poi il resto dei dati si assesta su valori simili. Ciò è dovuto dal fatto che ChatGPT cerca di introdurre e riempire i dati in maniera automatica e quindi nella maggior parte dei casi sceglie di inserire un valore comune, poiché è più veloce e semplice.
 
 \newpage
+
 # Inferenza Statistica
+
+L’inferenza statistica avrà il compito di **validare e rafforzare le conclusioni tratte nelle analisi descrittive e nei modelli di clustering**, applicando strumenti statistici che permetteranno di generalizzare i risultati oltre il dataset considerato. Questa fase consentirà di rispondere in modo più rigoroso alla domanda di ricerca, quantificando l’associazione tra le caratteristiche degli URL e la probabilità che un sito sia di phishing.
+
+La prima parte dell’analisi si concentrerà sulla **stima dei parametri**, utilizzando la regressione logistica per modellare la probabilità che un URL sia phishing o legittimo. Questa tecnica permetterà di valutare l’influenza delle variabili più significative, come la lunghezza dell’URL e il numero di caratteri speciali, attraverso i coefficienti stimati, il loro intervallo di confidenza e l’interpretazione degli odds ratio.
+
+Nella seconda parte delle analisi verranno applicati **test di verifica delle ipotesi**, per valutare la distribuzione e la relazione tra le variabili analizzate. Il test del Chi-Quadrato verrà utilizzato per verificare se la lunghezza degli URL segue una distribuzione normale e per valutare se esiste una relazione significativa tra le caratteristiche degli URL e la loro classificazione come phishing o legittimi. Inoltre, verrà confrontata la distribuzione dei dati reali con quella dei dati sintetici generati dai modelli LLM, per determinare se il dataset generato conserva le proprietà statistiche fondamentali dei dati reali.
+
+
 
 ## Stima dei parametri
 
-Usiamo il modello di regressione logistica per la stima dei parametri che influenzano la probabilità che un URL sia phishing o legittimo. Lo facciamo poiché la variabile sotto analisi è una variabile binaria, sulla quale non si può applicare regressione lineare. Attraverso il metodo della massima verosimiglianza, andiamo a stimare i coefficienti ($\beta$) per URLLength e NoOfOtherSpecialCharsInURL, permettendo di quantificare il loro impatto sulla classificazione ovvero come influenzano label. 
+Usiamo il modello di regressione logistica per la stima dei parametri che influenzano la probabilità che un URL sia phishing o legittimo. Lo facciamo poiché la variabile sotto analisi è una variabile binaria, sulla quale non si può applicare regressione lineare. Attraverso il **metodo della massima verosimiglianza**, andiamo a stimare i coefficienti ($\beta$) per **URLLength** e **NoOfOtherSpecialCharsInURL**, permettendo di quantificare il loro impatto sulla classificazione ovvero come influenzano label.
 
 ### Regressione logistica
 
@@ -1305,7 +1345,6 @@ exp(coef(modello_logistico))
 
 
 ```
-
 
 ```{r echo = FALSE}
 # Creazione della tabella con i risultati della regressione logistica
@@ -1326,44 +1365,42 @@ kable(logistic_results,
 
 La tabella mostra i risultati della regressione logistica per la classificazione di phishing (0) vs legittimo (1) in base a URLLength e NoOfOtherSpecialCharsInURL. Ecco il significato di ogni colonna:
 
-1. **Parametro**
-\begin{itemize}
-\item \textbf{Intercept}: costante del modello;
-\item \textbf{URLLength}: lunghezza dell’URL;
-\item \textbf{NoOfOtherSpecialCharsInURL}: numero di caratteri speciali nell’URL.
-\end{itemize}
+1.  **Parametro**
 
+    \begin{itemize}
+    \item \textbf{Intercept}: costante del modello;
+    \item \textbf{URLLength}: lunghezza dell’URL;
+    \item \textbf{NoOfOtherSpecialCharsInURL}: numero di caratteri speciali nell’URL.
+    \end{itemize}
 
-2. **Coefficiente ($\beta$)**: indica quanto la variabile influenza la probabilità che l’URL sia legittimo (label = 1). Vediamo nel dettaglio i dati:
-\begin{itemize}
-\item \textbf{Intercept}: se un URL avesse lunghezza 0 e nessun carattere speciale, sarebbe molto probabile che sia legittimo;
-\item \textbf{URLLength}: un aumento della lunghezza dell'URL riduce la probabilità che l'URL sia legittimo;
-\item \textbf{NoOfOtherSpecialCharsInURL}: un aumento di 1 carattere nella lunghezza dell'URL aumenta la probabilità di phishing di circa il 1.14%.
-\end{itemize}
+2.  **Coefficiente (**$\beta$): indica quanto la variabile influenza la probabilità che l’URL sia legittimo (label = 1). Vediamo nel dettaglio i dati:
 
-3. **Errore Standard**: indica la variabilità del coefficiente stimato. Valori piccoli suggeriscono che la stima è precisa.
+    \begin{itemize}
+    \item \textbf{Intercept}: se un URL avesse lunghezza 0 e nessun carattere speciale, sarebbe molto probabile che sia legittimo;
+    \item \textbf{URLLength}: un aumento della lunghezza dell'URL riduce la probabilità che l'URL sia legittimo;
+    \item \textbf{NoOfOtherSpecialCharsInURL}: un aumento di 1 carattere speciale all'interno dell'URL aumenta la probabilità di phishing di circa il 1.14\%.
+    \end{itemize}
 
-4. **Z-value**: indica quanto è distante il coefficiente da 0, in termini di deviazioni standard. Valori molto alti (in valore assoluto) indicano che il coefficiente è molto significativo.
+3.  **Errore Standard**: indica la variabilità del coefficiente stimato. Valori piccoli suggeriscono che la stima è precisa.
 
+4.  **Z-value**: indica quanto è distante il coefficiente da 0, in termini di deviazioni standard. Valori molto alti (in valore assoluto) indicano che il coefficiente è molto significativo.
 
-5. **P-value**: indica quanto è probabile che il coefficiente sia diverso da 0 per puro caso. Se p < 0.05, la variabile è statisticamente significativa a livello alpha fissato pari a 0.05. Qui, tutte le variabili hanno **p-value < 0.001**, quindi hanno un impatto significativo.
+5.  **P-value**: indica quanto è probabile che il coefficiente sia diverso da 0 per puro caso. Se p \< 0.05, la variabile è statisticamente significativa a livello alpha fissato pari a 0.05. Qui, tutte le variabili hanno **p-value \< 0.001**, quindi hanno un impatto significativo.
 
+6.  **Odds Ratio ($e^\beta$)**: rappresenta quanto cambia la probabilità di essere legittimo quando la variabile aumenta di 1 unità. Vediamo nel dettaglio i dati:
 
-6. **Odds Ratio ($e^\beta$)**: rappresenta quanto cambia la probabilità di essere legittimo quando la variabile aumenta di 1 unità. Vediamo nel dettaglio i dati:
-\begin{itemize}
-\item \textbf{Intercept}: un URL senza caratteri speciali e con lunghezza zero è molto probabile che sia legittimo.
-\item \textbf{URLLength}: un URL più lungo riduce la probabilità di essere legittimo di circa 1.14\%
-\item \textbf{NoOfOtherSpecialCharsInURL}: aggiungere un carattere speciale riduce del 76\% la probabilità di essere legittimo (quindi aumenta di molto la probabilità di phishing).
-\end{itemize}
-
-L'Odds Ratio ha mostrato che gli URL più lunghi e con più caratteri speciali sono fortemente associati al phishing, confermando l'importanza di queste variabili nel modello predittivo.
+    \begin{itemize}
+    \item \textbf{Intercept}: un URL senza caratteri speciali e con lunghezza zero è molto probabile che sia legittimo.
+    \item \textbf{URLLength}: un URL più lungo riduce la probabilità di essere legittimo di circa 1.14\%
+    \item \textbf{NoOfOtherSpecialCharsInURL}: aggiungere un carattere speciale riduce del 76\% la probabilità di essere legittimo (quindi aumenta di molto la probabilità di phishing).
+    \end{itemize}
 
 In conclusione:
 
-- **Gli URL più lunghi tendono ad essere più di phishing**;
-- **Gli URL con più caratteri speciali sono fortemente associati al phishing**.
+-   **Gli URL più lunghi tendono ad essere più di phishing**;
+-   **Gli URL con più caratteri speciali sono fortemente associati al phishing**.
 
-Andiamo a testare il nostro modello, con la creazione di un dataframe che simula un sito con un URL lungo 100 caratteri e che contiene 5 altri caratteri speciali non comuni.
+Andiamo a testare il nostro modello, con la creazione di un dataframe che simula un sito con un **URL lungo 100 caratteri e che contiene 5 altri caratteri speciali non comuni**.
 
 ```{r echo = FALSE}
 # Sito di prova
@@ -1375,18 +1412,19 @@ prob_pred <- predict(modello_logistico, newdata = nuovo_sito, type = "response")
 
 ```
 
-La probabilità che esso sia legittimo è 0.0065, ciò indica che il modello predice in maniera corretta che il sito sarà di phishing.
+La probabilità che esso sia legittimo è **0.0065**, ciò indica che il modello predice in maniera corretta che il sito sarà di phishing.
 
-## Verifica delle ipotesi 
+## Verifica delle ipotesi
 
-### Applicazione criterio del chi quadro per distribuzione normale
-L’obiettivo di questo test è verificare se la distribuzione della lunghezza degli URL segue una distribuzione normale. Questo è fondamentale perché molte analisi statistiche assumono una distribuzione normale dei dati; se questa ipotesi non è valida, dovremmo considerare alternative più adatte per rappresentare il fenomeno analizzato. Per fare questa analisi, utilizziamo il test del Chi-Quadro, confrontando la distribuzione osservata con quella teorica.
+### Applicazione criterio del chi-quadrato per distribuzione normale
 
-Nel test del Chi-Quadrato, abbiamo due ipotesi da verificare:
+L’obiettivo di questo test è verificare se la distribuzione della lunghezza degli URL segue una **distribuzione normale**. Questo è fondamentale perché molte analisi statistiche assumono una distribuzione normale dei dati; se questa ipotesi non è valida, dovremmo considerare alternative più adatte per rappresentare il fenomeno analizzato. Per fare questa analisi, utilizziamo il **test del chi-quadrato**, confrontando la distribuzione osservata con quella teorica.
 
-Ipotesi Nulla ($H_0$):La distribuzione della lunghezza degli URL segue una distribuzione normale.
+Nel test del chi-quadrato, abbiamo due ipotesi da verificare:
 
-Ipotesi Alternativa ($H_1$): La distribuzione della lunghezza degli URL NON segue una distribuzione normale.
+**Ipotesi Nulla ($H_0$)**: la distribuzione della lunghezza degli URL segue una distribuzione normale.
+
+**Ipotesi Alternativa ($H_1$)**: la distribuzione della lunghezza degli URL NON segue una distribuzione normale.
 
 ```{r echo = FALSE, results='hide'}
 # Calcolo media e deviazione standard
@@ -1408,7 +1446,7 @@ nint[4] <- length(which((dataset$URLLength >= a[3]) & (dataset$URLLength < a[4])
 nint[5] <- length(which(dataset$URLLength >= a[4]))
 nint
 
-# Calcolo chi-quadro
+# Calcolo chi-quadrato
 chi2 <- sum(((nint-n*0.2)/sqrt(n*0.2))^2)
 chi2
 
@@ -1419,9 +1457,8 @@ qchisq(alpha/2, df = 2)
 qchisq(1-alpha/2, df = 2)
 ```
 
-
 ```{r echo = FALSE}
-# Creazione della tabella con i risultati del test Chi-Quadro
+# Creazione della tabella con i risultati del test chi-quadrato
 results <- data.frame(
   Descrizione = c(
     "Media URLLength", 
@@ -1430,47 +1467,47 @@ results <- data.frame(
     "valore critico inferiore", 
     "valore critico superioree)"
   ),
-  Valore = c(
+  Valore = format(c(
     35.02048, 
     33.79185, 
     20957.22, 
     0.05063562, 
     7.377759
-  )
+  ), scientific = FALSE)
 )
 
 # Stampa della tabella
-kable(results, caption = "Risultati test Chi-Quadrato")
+kable(results, caption = "Risultati test chi-quadrato")
 
 ```
-Il test del Chi-Quadrato confronta le frequenze osservate nei dati reali con quelle attese sotto una distribuzione normale. Per fare ciò:
+
+Il test del chi-quadrato confronta le frequenze osservate nei dati reali con quelle attese sotto una distribuzione normale. Per fare ciò:
 
 \begin{itemize}
 \item È stata calcolata la media e la deviazione standard della variabile URLLength.
 \item Sono stati determinati quattro valori di soglia basati sulla distribuzione normale, suddividendo la variabile in cinque intervalli di frequenza.
-\item È stato applicato il test del chi-quadro per verificare la bontà di adattamento della distribuzione dei dati alla normale attesa.
-\item Sono stati calcolati i valori critici del chi-quadro per un livello di significatività $\alpha$ = 0.05.
+\item È stato applicato il test del chi-quadrato per verificare la bontà di adattamento della distribuzione dei dati alla normale attesa.
+\item Sono stati calcolati i valori critici del chi-quadrato per un livello di significatività $\alpha$ = 0.05.
 \end{itemize}
 
-La statistica del Chi-Quadrato calcolata è molto elevata, indicando una forte discrepanza tra le frequenze osservate e quelle attese sotto la normale.
+La statistica del chi-quadrato calcolata è molto elevata, indicando una **forte discrepanza** tra le frequenze osservate e quelle attese sotto la normale.
 
-Il p-value risulta estremamente basso (<0.05), indicando che la probabilità che questa discrepanza sia dovuta al caso è praticamente nulla.
+Il p-value risulta estremamente basso (\<0.05), indicando che la probabilità che questa discrepanza sia dovuta al caso è praticamente nulla.
 
-Dunque il test fornisce evidenza sufficiente per rifiutare l'ipotesi nulla $H_0$, quindi la distribuzione della lunghezza degli URL non segue una distribuzione normale.
+Dunque il test fornisce evidenza sufficiente per **rifiutare l'ipotesi nulla $H_0$**, quindi la distribuzione della lunghezza degli URL non segue una distribuzione normale.
 
+### Applicazione criterio del chi-quadrato per distribuzione di Bernoulli
 
-### Applicazione criterio del chi quadro per distribuzione di Bernoulli
+Poiché il test del chi-quadrato ha mostrato che la lunghezza degli URL non segue una distribuzione normale, vogliamo confrontarla con un’altra distribuzione che potrebbe descriverla meglio: la distribuzione di Bernoulli. La normale è una distribuzione continua, mentre la Bernoulli è discreta e adatta a variabili binarie (0/1). Per effettuare questo confronto, binarizziamo la lunghezza degli URL in due categorie, in base alle informazioni ricavate dalle analisi precedenti:
 
-Poiché il test del Chi-Quadrato ha mostrato che la lunghezza degli URL non segue una distribuzione normale, vogliamo confrontarla con un’altra distribuzione che potrebbe descriverla meglio: la distribuzione di Bernoulli. La normale è una distribuzione continua, mentre la Bernoulli è discreta e adatta a variabili binarie (0/1). Per effettuare questo confronto, binarizziamo la lunghezza degli URL in due categorie:
+-   **Corto (0)**: URL con lunghezza inferiore a una soglia (upper bound IQR).
+-   **Lungo (1)**: URL con lunghezza superiore alla stessa soglia.
 
-Corto (0): URL con lunghezza inferiore a una soglia (upper bound IQR).
-Lungo (1): URL con lunghezza superiore alla stessa soglia.
+In questo caso quindi le ipotesi sono:
 
-In questo caso quindi le ipotesi sono: 
+-   **Ipotesi Nulla ($H_0$)**: la distribuzione binarizzata della lunghezza degli URL segue una distribuzione di Bernoulli con parametro p. Ciò significa che le frequenze osservate di URL lunghi e corti corrispondono alle frequenze attese sotto una distribuzione di Bernoulli con la probabilità stimata p.
 
-Ipotesi Nulla ($H_0$):  La distribuzione binarizzata della lunghezza degli URL segue una distribuzione di Bernoulli con parametro p. Ciò significa che le frequenze osservate di URL lunghi e corti corrispondono alle frequenze attese sotto una distribuzione di Bernoulli con la probabilità stimata p.
-
-Ipotesi Alternativa ($H_1$): La distribuzione binarizzata della lunghezza degli URL NON segue una distribuzione di Bernoulli con parametro p.
+-   **Ipotesi Alternativa ($H_1$)**: la distribuzione binarizzata della lunghezza degli URL NON segue una distribuzione di Bernoulli con parametro p.
 
 ```{r echo = FALSE}
 # Estrazione della variabile URLLength
@@ -1489,30 +1526,32 @@ obs_freq <- table(dati_binari)
 # Calcoliamo le frequenze attese sotto la distribuzione di Bernoulli con p_hat
 expected_freq <- c(length(dati_binari) * (1 - p), length(dati_binari) * p)
 
-# Test del Chi-Quadrato
+# Test del chi-quadrato
 chi2_test <- chisq.test(obs_freq, p = expected_freq / sum(expected_freq), rescale.p = TRUE)
 
 ```
-Il p-value misura la probabilità che le differenze tra osservato e atteso siano dovute al caso. Il p-value = 1 indica che i dati osservati sono perfettamente compatibili con la distribuzione Bernoulli ipotizzata, quindi non c'è alcuna evidenza per rifiutare l'ipotesi nulla $H_0$. Quindi possiamo concludere che la distribuzione binarizzata della lunghezza degli URL segue una distribuzione di Bernoulli.
 
-### Test Chi-Quadrato su URLLength
-Ora che abbiamo stabilito che la variabile binarizzata della lunghezza degli URL segue una distribuzione Bernoulli, vogliamo capire se esiste un’associazione tra la lunghezza dell’URL e la probabilità che un sito sia di phishing.
+Il p-value misura la probabilità che le differenze tra osservato e atteso siano dovute al caso. Il p-value = 1 indica che i dati osservati sono perfettamente compatibili con la distribuzione Bernoulli ipotizzata, quindi **non c'è alcuna evidenza per rifiutare l'ipotesi nulla $H_0$**. Quindi possiamo concludere che la distribuzione binarizzata della lunghezza degli URL segue una distribuzione di Bernoulli.
 
-Per fare questo, utilizzeremo il test del Chi-Quadrato, che permette di valutare se due variabili categoriali sono indipendenti o se esiste una relazione statistica significativa tra di esse. Nel nostro caso, analizzeremo l’associazione tra:
+### Test chi-quadrato su URLLength
 
-- **URLLenght_Cat**: Variabile URLLength suddivisa in due categorie, URL lunghi e URL corti. Il valore che discriminerà le due categorie sarà il limite superiore calcolato nel metodo dell'IQR.
+Ora che abbiamo stabilito che la variabile binarizzata della lunghezza degli URL segue una distribuzione di Bernoulli, vogliamo capire se esiste un’associazione tra la lunghezza dell’URL e la probabilità che un sito sia di phishing.
 
-- **label**: Variabile categoriale che distingue URL legittimi, da URL di phishing.
+Per fare questo, utilizzeremo il test del chi-quadrato, che permette di valutare se due variabili categoriali sono indipendenti o se esiste una relazione statistica significativa tra di esse. Nel nostro caso, analizzeremo l’associazione tra:
+
+-   **URLLenght_Cat**: variabile URLLength suddivisa in due categorie, URL lunghi e URL corti. Il valore che discriminerà le due categorie sarà il limite superiore calcolato nel metodo dell'IQR.
+
+-   **label**: variabile categoriale che distingue URL legittimi, da URL di phishing.
 
 Definiamo le nostre due ipotesi, dove $H_0$ sarà l'ipotesi nulla e $H_1$ l'ipotesi alternativa:
 
--**$H_0$**: La lunghezza dell'URL e la probabilità di phishing sono indipendenti;
--**$H_1$**: C'è un'associazione significativa tra URL lunghi e phishing.
+-   $H_0$: la lunghezza dell'URL e la probabilità di phishing sono indipendenti;
+-   $H_1$: c'è un'associazione significativa tra URL lunghi e phishing.
 
-Se il **p-value < 0.05**, rifiutiamo $H_0$ e concludiamo che gli URL lunghi sono significativamente più associati a siti di phishing.
+Se il **p-value \< 0.05**, rifiutiamo $H_0$ e concludiamo che gli URL lunghi sono significativamente più associati a siti di phishing.
 
 ```{r echo = FALSE, results='hide'}
-#Test Chi-Quadrato
+#Test chi-quadrato
 dataset$URLLength_Cat <- ifelse(dataset$URLLength > upper_bound_URL, "Lungo", "Corto")
 chisq.test(table(dataset$URLLength_Cat, dataset$label))
 
@@ -1524,28 +1563,30 @@ chi_sq_result <- data.frame(
 ```
 
 ```{r echo = FALSE}
-kable(chi_sq_result, caption = "Risultati test Chi-Quadrato")
+kable(chi_sq_result, caption = "Risultati test chi-quadrato")
 
 ```
 
-I risultati del test mostrano come Il valore **$X^2$** è molto alto, indicando una forte deviazione dall’indipendenza e Il **p-value < 2.2e-16 è estremamente piccolo**, quindi possiamo rifiutare l’ipotesi nulla e concludere che esiste una relazione significativa tra la lunghezza degli URL e il fatto che siano di phishing.
+I risultati del test mostrano come Il valore $X^2$ è molto alto, indicando una forte deviazione dall’indipendenza e Il **p-value \< 2.2e-16 è estremamente piccolo**, quindi **possiamo rifiutare l’ipotesi nulla** e concludere che esiste una relazione significativa tra la lunghezza degli URL e il fatto che siano di phishing.
 
-### Test Chi-Quadrato su NoOfOtherSpecialCharsInURL
+### Test chi-quadrato su NoOfOtherSpecialCharsInURL
 
-Anche in questo caso, utilizzeremo il test del chi-quadrato che verifica l'associazione tra due variabili categoriali che sono:
+Visto che c'è una stretta relazione tra URLLength e NoOfOtherSpecialCharsInURL, proviamo ad applicare lo stesso tipo di test sull'altra variabile presa in esame.
 
-- **NoOfOtherSpecialCharsInURL_Cat**: Variabile NoOfOtherSpecialCharsInURL suddivisa in due categorie, NoOfOtherSpecialCharsInURL > 6 NoOfOtherSpecialCharsInURL <= 6. Il valore che discriminerà le due categorie sarà il limite superiore calcolato nel metodo dell'IQR.
-- **label**: Variabile categoriale che distingue URL legittimi, da URL di phishing. 
+Ciò che si andrà a verificare dunque è l'associazione tra due variabili categoriali che sono:
+
+-   **NoOfOtherSpecialCharsInURL_Cat**: variabile NoOfOtherSpecialCharsInURL suddivisa in due categorie, NoOfOtherSpecialCharsInURL \> 6 NoOfOtherSpecialCharsInURL \<= 6. Il valore che discriminerà le due categorie sarà il limite superiore calcolato nel metodo dell'IQR.
+-   **label**: variabile categoriale che distingue URL legittimi, da URL di phishing.
 
 Definiamo le nostre due ipotesi, dove $H_0$ sarà l'ipotesi nulla e $H_1$ l'ipotesi alternativa:
 
--**$H_0$**: Il numero di altri caratteri speciali in un URL e la probabilità di phishing sono indipendenti;
--**$H_1$**: C'è un'associazione significativa tra il numero di altri caratteri speciali in un URL e phishing.
+-   $H_0$: il numero di altri caratteri speciali in un URL e la probabilità di phishing sono indipendenti;
+-   $H_1$: c'è un'associazione significativa tra il numero di altri caratteri speciali in un URL e phishing.
 
-Se il **p-value < 0.05**, rifiutiamo $H_0$ e concludiamo che gli URL con una frequenza elevata di altri caratteri speciali sono significativamente più associati a phishing.
+Se il **p-value \< 0.05**, rifiutiamo $H_0$ e concludiamo che gli URL con una frequenza elevata di altri caratteri speciali sono significativamente più associati a phishing.
 
 ```{r echo = FALSE, results='hide'}
-#Test Chi-Quadrato
+#Test chi-quadrato
 dataset$NoOfOtherSpecialCharsInURL_Cat <- ifelse(dataset$NoOfOtherSpecialCharsInURL > upper_bound_special_chars, "Caratteri > 6", "Caratteri <= 6")
 chisq.test(table(dataset$NoOfOtherSpecialCharsInURL_Cat, dataset$label))
 
@@ -1557,44 +1598,39 @@ chi_sq_result <- data.frame(
 ```
 
 ```{r echo = FALSE}
-kable(chi_sq_result, caption = "Risultati test Chi-Quadrato")
+kable(chi_sq_result, caption = "Risultati test chi-quadrato")
 
 ```
 
-Anche in questo caso, i risultati del test mostrano come Il valore **$X^2$** è molto alto, indicando una forte deviazione dall’indipendenza e Il **p-value < 2.2e-16 è estremamente piccolo**, quindi possiamo rifiutare l’ipotesi nulla e concludere che esiste una relazione estremamente significativa tra la frequenza elevata di altri caratteri speciali e il phishing.
+Anche in questo caso, i risultati del test mostrano come Il valore $X^2$ è molto alto, indicando una forte deviazione dall’indipendenza e Il **p-value \< 2.2e-16 è estremamente piccolo**, quindi possiamo rifiutare l’ipotesi nulla e concludere che esiste una relazione estremamente significativa tra la frequenza elevata di altri caratteri speciali e il phishing.
 
 \newpage
+
 # Conclusioni
 
 ## Risultati RQ1: Quali caratteristiche degli URL sono maggiormente associate alla probabilità che un sito sia di phishing?
 
 L'analisi ha evidenziato che le seguenti variabili sono significativamente associate alla probabilità che un URL sia di phishing:
 
-- **URLLength**: Gli URL di phishing tendono ad essere più lunghi rispetto a quelli legittimi. Inoltre, il **test del Chi-Quadrato** ha mostrato una forte associazione tra URL lunghi e phishing. Gli URL superiori al limite IQR (49 caratteri) sono **100% phishing**, confermando che la lunghezza è un indicatore rilevante.
+-   **URLLength**: gli URL di phishing tendono ad essere più lunghi rispetto a quelli legittimi. Inoltre, il **test del chi-quadrato** ha mostrato una forte associazione tra URL lunghi e phishing. Gli URL superiori al limite IQR (49 caratteri) sono **100% phishing**, confermando che la lunghezza è un indicatore rilevante.
 
-- **NoOfOtherSpecialCharsInURL**: Gli URL di phishing hanno un numero di caratteri speciali significativamente più elevato. Inoltre, il **test del Chi-Quadrato** ha confermato che un numero elevato di caratteri speciali è fortemente associato agli URL di phishing. Infine gli URL con più di 6 caratteri speciali sono quasi esclusivamente phishing.
+-   **NoOfOtherSpecialCharsInURL**: gli URL di phishing hanno un numero di caratteri speciali significativamente più elevato. Inoltre, il **test del chi-quadrato** ha confermato che un numero elevato di caratteri speciali è fortemente associato agli URL di phishing. Infine gli URL con più di 6 caratteri speciali sono quasi esclusivamente phishing.
 
-- **NoOfSubDomain**: Questa variabile mostra una variabilità maggiore nei siti di phishing, ma **non è un predittore forte** rispetto alle altre due. La maggior parte degli URL (sia phishing che legittimi) ha 1 sottodominio, quindi non è discriminante.
-  
+-   **NoOfSubDomain**: questa variabile mostra una variabilità maggiore nei siti di phishing, ma **non è un predittore forte** rispetto alle altre due. La maggior parte degli URL (sia phishing che legittimi) ha 1 sottodominio, quindi non è discriminante.
 
-L’**analisi di regressione logistica** ha confermato che:
+L’analisi di regressione logistica ha confermato che:
 
-  - **URLLength ha un coefficiente negativo**, indicando che all’aumentare della lunghezza, diminuisce la probabilità che un URL sia legittimo.
-  - **NoOfOtherSpecialCharsInURL ha un impatto molto più forte** il che significa che più caratteri speciali sono presenti, più è probabile che l’URL sia phishing.
+-   **URLLength ha un coefficiente negativo**, indicando che all’aumentare della lunghezza, diminuisce la probabilità che un URL sia legittimo.
+-   **NoOfOtherSpecialCharsInURL ha un impatto molto più forte** il che significa che più caratteri speciali sono presenti, più è probabile che l’URL sia phishing.
 
-**Conclusione su RQ1**:  Gli URL più lunghi e con più caratteri speciali sono fortemente associati al phishing.
+**Conclusione su RQ1**: gli URL più lunghi e con più caratteri speciali sono fortemente associati al phishing.
 
 ## Risultati RQ2: È possibile utilizzare i dati generati dai modelli linguistici di grandi dimensioni (LLM) per migliorare la qualità di dataset reali?
 
 Abbiamo confrontato il dataset reale con un dataset generato da ChatGPT utilizzando URLLength e applicando le stesse tecniche di clustering.
 
-Il clustering sul dataset reale mostra due gruppi distinti: URL corti e URL lunghi, con il Cluster 2 caratterizzato da un’alta variabilità e la presenza di outlier oltre i 1000 caratteri.  
+Il clustering sul dataset reale mostra due gruppi distinti: URL corti e URL lunghi, con uno dei due cluster caratterizzato da un’alta variabilità e la presenza di outlier oltre i 1000 caratteri.
 
-Nel dataset generato da ChatGPT, i cluster sono più nettamente separati ma meno variabili, con una distribuzione semplificata che sottostima la lunghezza estrema degli URL**. Inoltre, ChatGPT tende a generare valori ripetitivi, riducendo la dispersione e l'accuratezza del modello nel catturare le caratteristiche reali degli URL di phishing. In conclusione il dataset sintetico è più regolare ma meno realistico, il che potrebbe limitare l’efficacia dei modelli di rilevamento del phishing.
+Nel dataset generato da ChatGPT, i cluster sono più nettamente separati ma meno variabili, con una distribuzione semplificata che sottostima la lunghezza estrema degli URL. Inoltre, ChatGPT tende a generare valori ripetitivi, riducendo la dispersione e l'accuratezza del modello nel catturare le caratteristiche reali degli URL di phishing. In conclusione, **il dataset sintetico è più regolare ma meno realistico**, il che limiterebbe l’efficacia dei modelli di rilevamento del phishing.
 
-**Conclusione su RQ2**: I dati generati dagli LLM possono essere utili per aumentare il volume di dataset reali, ma hanno limitazioni nella rappresentazione degli outlier e della variabilità reale dei dati di phishing, il che potrebbe influenzare in maniera negativa la distribuzione dei dati.  
-
- 
-
-
-
+**Conclusione su RQ2**: i dati generati dagli LLM possono essere utili per aumentare il volume di dataset reali, ma hanno **limitazioni nella rappresentazione degli outlier e della variabilità reale dei dati di phishing**, il che potrebbe influenzare in maniera negativa la distribuzione dei dati.
